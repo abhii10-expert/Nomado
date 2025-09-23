@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - Nomado</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .payment-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .booking-summary {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .payment-section {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        .amount-display {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #28a745;
+        }
+        .secure-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #e8f5e8;
+            color: #155724;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .payment-methods {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .payment-method {
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method:hover {
+            border-color: #007bff;
+            background: #f8f9ff;
+        }
+        .payment-method.selected {
+            border-color: #007bff;
+            background: #e3f2fd;
+        }
+        .payment-form {
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+            border: 1px solid #dee2e6;
+            display: none;
+        }
+        .payment-form h5 {
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        .payment-form label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        .payment-form .form-control {
+            margin-bottom: 1rem;
+        }
+        .form-check-label {
+            font-weight: normal;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .btn-pay {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+        .btn-pay:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container payment-container">
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h2><i class="fas fa-credit-card"></i> Complete Your Payment</h2>
+            <p class="text-muted">Secure payment powered by Razorpay</p>
+        </div>
+
+        <!-- Booking Summary -->
+        <div class="booking-summary">
+            <h4><i class="fas fa-receipt"></i> Booking Summary</h4>
+            <div class="row mt-3">
+                <div class="col-md-6">
+                    {% if booking_type == 'hotel' %}
+                        <h5><i class="fas fa-hotel"></i> {{ booking.hotel.name }}</h5>
+                        <p class="mb-1"><strong>Check-in:</strong> {{ booking.check_in_date }}</p>
+                        <p class="mb-1"><strong>Check-out:</strong> {{ booking.check_out_date }}</p>
+                        <p class="mb-1"><strong>Guests:</strong> {{ booking.guests }}</p>
+                        <p class="mb-1"><strong>Rooms:</strong> {{ booking.rooms }}</p>
+                        <p class="mb-1"><strong>Nights:</strong> {{ booking.nights }}</p>
+                    {% elif booking_type == 'transport' %}
+                        <h5><i class="fas fa-bus"></i> {{ booking.route.route_number }}</h5>
+                        <p class="mb-1"><strong>From:</strong> {{ booking.route.source_city }}</p>
+                        <p class="mb-1"><strong>To:</strong> {{ booking.route.destination_city }}</p>
+                        <p class="mb-1"><strong>Travel Date:</strong> {{ booking.travel_date }}</p>
+                        <p class="mb-1"><strong>Passengers:</strong> {{ booking.passengers }}</p>
+                        <p class="mb-1"><strong>Departure:</strong> {{ booking.route.departure_time }}</p>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 text-end">
+                    <p class="mb-1"><strong>Booking ID:</strong> {{ booking.booking_id }}</p>
+                    <p class="mb-1"><strong>Transaction ID:</strong> {{ transaction.transaction_id }}</p>
+                    <div class="amount-display mt-3">
+                        ₹{{ transaction.amount }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Section -->
+        <div class="payment-section">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-shield-alt"></i> Secure Payment</h4>
+                <div class="secure-badge">
+                    <i class="fas fa-lock"></i>
+                    SSL Secured
+                </div>
+            </div>
+
+            <!-- Payment Methods Display -->
+            <div class="payment-methods">
+                <div class="payment-method" data-method="card">
+                    <i class="fas fa-credit-card fa-2x mb-2"></i>
+                    <div>Credit/Debit Card</div>
+                </div>
+                <div class="payment-method" data-method="upi">
+                    <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                    <div>UPI</div>
+                </div>
+                <div class="payment-method" data-method="netbanking">
+                    <i class="fas fa-university fa-2x mb-2"></i>
+                    <div>Net Banking</div>
+                </div>
+                <div class="payment-method" data-method="wallet">
+                    <i class="fas fa-wallet fa-2x mb-2"></i>
+                    <div>Wallet</div>
+                </div>
+            </div>
+
+            <!-- Payment Forms (ADDED - This was missing!) -->
+            <div id="payment-forms">
+                <!-- Card Payment Form -->
+                <div id="card-form" class="payment-form">
+                    <h5><i class="fas fa-credit-card"></i> Card Details</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Card Number</label>
+                            <input type="text" id="card-number" class="form-control" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <label>Expiry Date</label>
+                            <input type="text" id="card-expiry" class="form-control" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="col-md-6">
+                            <label>CVV</label>
+                            <input type="text" id="card-cvv" class="form-control" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label>Cardholder Name</label>
+                            <input type="text" id="card-name" class="form-control" placeholder="Name on card">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-check-label">
+                            <input type="checkbox" id="save-card" class="form-check-input"> Save this card for future payments
+                        </label>
+                    </div>
+                </div>
+
+                <!-- UPI Payment Form -->
+                <div id="upi-form" class="payment-form">
+                    <h5><i class="fas fa-mobile-alt"></i> UPI Details</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>UPI ID</label>
+                            <input type="text" id="upi-id" class="form-control" placeholder="yourname@upi">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-check-label">
+                            <input type="checkbox" id="save-upi" class="form-check-input"> Save this UPI ID for future payments
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Net Banking Form -->
+                <div id="netbanking-form" class="payment-form">
+                    <h5><i class="fas fa-university"></i> Net Banking</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Select Your Bank</label>
+                            <select id="bank-select" class="form-control">
+                                <option value="">Choose your bank</option>
+                                <option value="SBI">State Bank of India</option>
+                                <option value="HDFC">HDFC Bank</option>
+                                <option value="ICICI">ICICI Bank</option>
+                                <option value="AXIS">Axis Bank</option>
+                                <option value="KOTAK">Kotak Mahindra Bank</option>
+                                <option value="PNB">Punjab National Bank</option>
+                                <option value="BOB">Bank of Baroda</option>
+                                <option value="CANARA">Canara Bank</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Wallet Payment Form -->
+                <div id="wallet-form" class="payment-form">
+                    <h5><i class="fas fa-wallet"></i> Digital Wallet</h5>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label>Select Wallet</label>
+                            <select id="wallet-select" class="form-control">
+                                <option value="">Choose your wallet</option>
+                                <option value="PAYTM">Paytm</option>
+                                <option value="PHONEPE">PhonePe</option>
+                                <option value="GPAY">Google Pay</option>
+                                <option value="AMAZONPAY">Amazon Pay</option>
+                                <option value="MOBIKWIK">MobiKwik</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-12">
+                            <label>Wallet Phone Number</label>
+                            <input type="text" id="wallet-phone" class="form-control" placeholder="Enter registered mobile number">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Button -->
+            <div class="text-center mt-4">
+                <button id="payBtn" class="btn btn-primary btn-pay btn-lg" disabled>
+                    <i class="fas fa-lock"></i> Select Payment Method
+                </button>
+            </div>
+
+            <!-- Security Info -->
+            <div class="row mt-4">
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-shield-alt text-success fa-2x"></i>
+                    <div class="small mt-2">256-bit SSL Encryption</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-lock text-success fa-2x"></i>
+                    <div class="small mt-2">Secure Payment Gateway</div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <i class="fas fa-credit-card text-success fa-2x"></i>
+                    <div class="small mt-2">PCI DSS Compliant</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cancel Option -->
+        <div class="text-center mt-3">
+            {% if booking_type == 'hotel' %}
+                <a href="{% url 'hotel_search' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Hotel Search
+                </a>
+            {% else %}
+                <a href="{% url 'transport_search' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Transport Search
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let selectedPaymentMethod = null;
+        let selectedPaymentData = {};
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Payment method selection - FIXED
+            const paymentMethods = document.querySelectorAll('.payment-method');
+            const payBtn = document.getElementById('payBtn');
+            
+            paymentMethods.forEach(method => {
+                method.addEventListener('click', function() {
+                    // Remove selection from all methods
+                    paymentMethods.forEach(m => m.classList.remove('selected'));
+                    document.querySelectorAll('.payment-form').forEach(f => f.style.display = 'none');
+                    
+                    // Select this method
+                    this.classList.add('selected');
+                    selectedPaymentMethod = this.getAttribute('data-method');
+                    
+                    // Show corresponding form
+                    const form = document.getElementById(selectedPaymentMethod + '-form');
+                    if (form) {
+                        form.style.display = 'block';
+                    }
+                    
+                    // Update pay button
+                    payBtn.disabled = false;
+                    payBtn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹{{ transaction.amount }}';
+                });
+            });
+
+            // Auto-select Card by default
+            const cardMethod = document.querySelector('[data-method="card"]');
+            if (cardMethod) {
+                cardMethod.click();
+            }
+        });
+
+        // Input formatting
+        document.addEventListener('input', function(e) {
+            if (e.target.id === 'card-number') {
+                let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+                let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+                if (formattedValue.length <= 19) {
+                    e.target.value = formattedValue;
+                }
+            }
+            
+            if (e.target.id === 'card-expiry') {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length >= 2) {
+                    value = value.substring(0, 2) + '/' + value.substring(2, 4);
+                }
+                e.target.value = value;
+            }
+        });
+
+        // Validate payment forms
+        function validatePaymentForm() {
+            if (!selectedPaymentMethod) {
+                alert('Please select a payment method');
+                return false;
+            }
+
+            switch(selectedPaymentMethod) {
+                case 'card':
+                    const cardNumber = document.getElementById('card-number')?.value?.replace(/\s/g, '') || '';
+                    const cardExpiry = document.getElementById('card-expiry')?.value || '';
+                    const cardCvv = document.getElementById('card-cvv')?.value || '';
+                    const cardName = document.getElementById('card-name')?.value || '';
+
+                    if (cardNumber.length < 13) {
+                        alert('Please enter a valid card number');
+                        return false;
+                    }
+                    if (!cardExpiry.match(/^\d{2}\/\d{2}$/)) {
+                        alert('Please enter expiry date in MM/YY format');
+                        return false;
+                    }
+                    if (cardCvv.length < 3) {
+                        alert('Please enter a valid 3-digit CVV');
+                        return false;
+                    }
+                    if (!cardName.trim()) {
+                        alert('Please enter the cardholder name');
+                        return false;
+                    }
+
+                    selectedPaymentData = {
+                        method: 'CREDIT_CARD',
+                        card_number: cardNumber.slice(-4),
+                        card_holder_name: cardName,
+                        expiry_month: cardExpiry.split('/')[0],
+                        expiry_year: '20' + cardExpiry.split('/')[1],
+                        save_method: document.getElementById('save-card')?.checked || false
+                    };
+                    break;
+
+                case 'upi':
+                    const upiId = document.getElementById('upi-id')?.value || '';
+                    
+                    if (!upiId.includes('@') || upiId.length < 5) {
+                        alert('Please enter a valid UPI ID (e.g., user@paytm)');
+                        return false;
+                    }
+
+                    selectedPaymentData = {
+                        method: 'UPI',
+                        upi_id: upiId,
+                        save_method: document.getElementById('save-upi')?.checked || false
+                    };
+                    break;
+
+                case 'netbanking':
+                    const selectedBank = document.getElementById('bank-select')?.value || '';
+                    
+                    if (!selectedBank) {
+                        alert('Please select your bank');
+                        return false;
+                    }
+
+                    selectedPaymentData = {
+                        method: 'NET_BANKING',
+                        bank_name: selectedBank,
+                        save_method: true
+                    };
+                    break;
+
+                case 'wallet':
+                    const selectedWallet = document.getElementById('wallet-select')?.value || '';
+                    const walletPhone = document.getElementById('wallet-phone')?.value || '';
+                    
+                    if (!selectedWallet) {
+                        alert('Please select your wallet');
+                        return false;
+                    }
+                    if (walletPhone.length < 10) {
+                        alert('Please enter a valid 10-digit phone number');
+                        return false;
+                    }
+
+                    selectedPaymentData = {
+                        method: 'WALLET',
+                        wallet_provider: selectedWallet,
+                        wallet_phone: walletPhone,
+                        save_method: true
+                    };
+                    break;
+
+                default:
+                    alert('Please select a payment method');
+                    return false;
+            }
+            return true;
+        }
+
+        // Pay button click handler
+        document.getElementById('payBtn').addEventListener('click', function() {
+            if (this.disabled) {
+                alert('Please select a payment method first');
+                return;
+            }
+
+            if (!validatePaymentForm()) {
+                return;
+            }
+
+            // Show processing
+            this.disabled = true;
+            this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing Payment...';
+
+            // Simulate payment processing
+            setTimeout(() => {
+                // Save payment method if requested
+                if (selectedPaymentData.save_method) {
+                    savePaymentMethod(selectedPaymentData);
+                }
+
+                // Simulate successful payment
+                const paymentResult = {
+                    razorpay_order_id: 'order_' + generateId(),
+                    razorpay_payment_id: 'pay_' + generateId(),
+                    razorpay_signature: 'sig_' + generateId(),
+                    transaction_id: '{{ transaction.transaction_id }}',
+                    payment_method: selectedPaymentData
+                };
+                
+                verifyPayment(paymentResult);
+            }, 2000);
+        });
+
+        // Generate random ID
+        function generateId() {
+            return Math.random().toString(36).substring(2, 15);
+        }
+
+        // Save payment method
+        function savePaymentMethod(paymentData) {
+            fetch('/payments/save-method/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(paymentData)
+            }).catch(error => {
+                console.log('Failed to save payment method:', error);
+            });
+        }
+
+        // Verify payment
+        function verifyPayment(paymentResult) {
+            fetch('{% url "verify_payment" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(paymentResult)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Send email receipt
+                    sendEmailReceipt(paymentResult);
+                    window.location.href = data.redirect_url;
+                } else {
+                    alert('Payment verification failed: ' + data.message);
+                    window.location.href = '{% url "payment_failure" transaction.transaction_id %}';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Payment processing failed. Please try again.');
+                // Reset button
+                const btn = document.getElementById('payBtn');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay ₹{{ transaction.amount }}';
+            });
+        }
+
+        // Send email receipt
+        function sendEmailReceipt(paymentResult) {
+            fetch('/payments/send-receipt/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    transaction_id: '{{ transaction.transaction_id }}',
+                    payment_details: paymentResult
+                })
+            }).catch(error => {
+                console.log('Failed to send receipt:', error);
+            });
+        }
+
+        // Utility function
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    </script>
+</body>
+</html>

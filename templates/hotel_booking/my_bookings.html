@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}My Hotel Bookings - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">My Hotel Bookings</h1>
+    <p style="color: #666;">Manage and track your hotel reservations</p>
+</div>
+
+{% if bookings %}
+    <div style="display: grid; gap: 1.5rem;">
+        {% for booking in bookings %}
+            <div class="card" style="display: grid; grid-template-columns: 1fr auto; gap: 2rem; align-items: center;">
+                <div>
+                    <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                        <h3 style="color: #333; margin: 0;">{{ booking.hotel.name }}</h3>
+                        <span class="status-badge status-{{ booking.booking_status|lower }}">{{ booking.get_booking_status_display }}</span>
+                    </div>
+                    
+                    <div style="color: #666; margin-bottom: 1rem;">
+                        📍 {{ booking.hotel.city }} • 
+                        🗓️ {{ booking.check_in_date|date:"M d" }} - {{ booking.check_out_date|date:"M d, Y" }} • 
+                        🏠 {{ booking.rooms }} room{{ booking.rooms|pluralize }} • 
+                        👥 {{ booking.guests }} guest{{ booking.guests|pluralize }}
+                    </div>
+                    
+                    <div style="display: flex; gap: 2rem; font-size: 0.9rem; color: #666;">
+                        <div><strong>Booking ID:</strong> {{ booking.booking_id }}</div>
+                        <div><strong>Booked on:</strong> {{ booking.created_at|date:"M d, Y" }}</div>
+                        <div><strong>Total:</strong> ₹{{ booking.total_amount|floatformat:0 }}</div>
+                    </div>
+                </div>
+                
+                <div style="text-align: right;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <a href="{% url 'booking_confirmation' booking.booking_id %}" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.9rem;">View Details</a>
+                        {% if booking.booking_status in 'PENDING,CONFIRMED' %}
+                            <a href="{% url 'cancel_hotel_booking' booking.booking_id %}" class="btn" style="background: #e74c3c; padding: 8px 16px; font-size: 0.9rem;">Cancel</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card" style="text-align: center; padding: 4rem;">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🏨</div>
+        <h3 style="color: #667eea; margin-bottom: 1rem;">No Bookings Yet</h3>
+        <p style="color: #666; margin-bottom: 2rem;">Start exploring and book your first hotel stay with Nomado</p>
+        <a href="{% url 'hotel_search' %}" class="btn">Search Hotels</a>
+    </div>
+{% endif %}
+
+<style>
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-cancelled {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-completed {
+    background: #cce7ff;
+    color: #004085;
+}
+</style>
+{% endblock %}

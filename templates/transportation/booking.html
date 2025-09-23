@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+
+{% block title %}Book {{ route.get_transport_type_display }} - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">Book Your {{ route.get_transport_type_display }}</h1>
+    <p style="color: #666;">{{ route.route_number }} - {{ route.operator_name }}</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Booking Form -->
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Passenger Details</h3>
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Contact Information -->
+            <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 10px; margin-bottom: 2rem;">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Information</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="{{ booking_form.contact_name.id_for_label }}">Full Name</label>
+                        <input type="text" name="contact_name" id="{{ booking_form.contact_name.id_for_label }}" class="form-control" value="{{ booking_form.contact_name.value|default:'' }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="{{ booking_form.contact_phone.id_for_label }}">Phone Number</label>
+                        <input type="text" name="contact_phone" id="{{ booking_form.contact_phone.id_for_label }}" class="form-control" value="{{ booking_form.contact_phone.value|default:'' }}" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="{{ booking_form.contact_email.id_for_label }}">Email Address</label>
+                    <input type="email" name="contact_email" id="{{ booking_form.contact_email.id_for_label }}" class="form-control" value="{{ booking_form.contact_email.value|default:'' }}" required>
+                </div>
+            </div>
+            
+            <!-- Passenger Details -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">Passenger Information</h4>
+                {% for i in passenger_form %}
+                    {% if forloop.counter0|divisibleby:3 and forloop.counter0 > 0 %}
+                        </div>
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <strong style="color: #333;">Passenger {{ forloop.counter0|add:4|floatformat:0|add:3 }}</strong>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    {% elif forloop.counter0|divisibleby:3 %}
+                        <div style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                            <strong style="color: #333;">Passenger {{ forloop.counter0|floatformat:0|add:3|add:1 }}</strong>
+                            <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                    {% endif %}
+                    
+                    <div class="form-group">
+                        <label for="{{ i.id_for_label }}">{{ i.label }}</label>
+                        {{ i }}
+                    </div>
+                    
+                    {% if forloop.counter|divisibleby:3 %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <!-- Handle remaining fields if not divisible by 3 -->
+                {% if not passenger_form|length|divisibleby:3 %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <!-- Booking Details -->
+            <div class="form-group">
+                <label for="{{ booking_form.passengers.id_for_label }}">Number of Passengers</label>
+                <input type="number" name="passengers" id="{{ booking_form.passengers.id_for_label }}" class="form-control" value="{{ passengers }}" readonly>
+            </div>
+            
+            <div class="form-group">
+                <label for="{{ booking_form.class_type.id_for_label }}">Class</label>
+                <select name="class_type" id="{{ booking_form.class_type.id_for_label }}" class="form-control">
+                    <option value="ECONOMY">Economy</option>
+                    <option value="PREMIUM">Premium</option>
+                    {% if route.transport_type == 'FLIGHT' %}
+                        <option value="BUSINESS">Business</option>
+                        <option value="FIRST">First Class</option>
+                    {% endif %}
+                </select>
+            </div>
+            
+            <!-- Terms and Conditions -->
+            <div style="margin: 2rem 0;">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" required> 
+                    I agree to the <a href="#" style="color: #667eea;">Terms & Conditions</a> and <a href="#" style="color: #667eea;">Cancellation Policy</a>
+                </label>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+                Proceed to Payment - ₹{{ total_amount|floatformat:0 }}
+            </button>
+        </form>
+    </div>
+    
+    <!-- Booking Summary -->
+    <div>
+        <div class="card">
+            <h3 style="color: #667eea; margin-bottom: 1.5rem;">Journey Summary</h3>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                {% if route.transport_type == 'FLIGHT' %}
+                    <span style="font-size: 3rem;">✈️</span>
+                {% elif route.transport_type == 'TRAIN' %}
+                    <span style="font-size: 3rem;">🚄</span>
+                {% else %}
+                    <span style="font-size: 3rem;">🚌</span>
+                {% endif %}
+                <div style="font-weight: bold; color: #333; margin-top: 0.5rem;">{{ route.route_number }}</div>
+                <div style="color: #667eea; font-weight: 600;">{{ route.operator_name }}</div>
+            </div>
+            
+            <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 1.2rem; font-weight: bold;">{{ route.departure_time|time:"H:i" }}</div>
+                    <div style="color: #666; font-size: 0.9rem;">{{ route.source_city }}</div>
+                    <div style="color: #999; font-size: 0.8rem;">{{ route.source_station }}</div>
+                </div>
+                <div style="text-align: center; color: #667eea;">
+                    <div>→</div>
+                    <div style="font-size: 0.8rem;">{{ route.duration_display }}</div>
+                </div>
+                <div style="text-align: center; flex: 1;">
+                    <div style="font-size: 1.2rem; font-weight: bold;">{{ route.arrival_time|time:"H:i" }}</div>
+                    <div style="color: #666; font-size: 0.9rem;">{{ route.destination_city }}</div>
+                    <div style="color: #999; font-size: 0.8rem;">{{ route.destination_station }}</div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Travel Date:</span>
+                    <strong>{{ travel_date }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Passengers:</span>
+                    <strong>{{ passengers }}</strong>
+                </div>
+            </div>
+            
+            <!-- Amenities -->
+            {% if route.ac_available or route.wifi_available or route.food_service or route.sleeper_available %}
+                <div style="margin-bottom: 1.5rem;">
+                    <strong style="color: #333; margin-bottom: 0.5rem; display: block;">Amenities:</strong>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        {% if route.ac_available %}
+                            <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">❄️ AC</span>
+                        {% endif %}
+                        {% if route.wifi_available %}
+                            <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">📶 WiFi</span>
+                        {% endif %}
+                        {% if route.food_service %}
+                            <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">🍽️ Food</span>
+                        {% endif %}
+                        {% if route.sleeper_available %}
+                            <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">🛏️ Sleeper</span>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+            
+            <!-- Pricing Breakdown -->
+            <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Base fare ({{ passengers }} passengers)</span>
+                    <span>₹{{ route.base_price|floatformat:0 }} × {{ passengers }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Convenience fee</span>
+                    <span>₹50</span>
+                </div>
+                <hr>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; color: #333;">
+                    <span>Total Amount</span>
+                    <span>₹{{ total_amount|floatformat:0 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Important Info -->
+        <div class="card" style="margin-top: 1rem; background: #fff3cd;">
+            <h4 style="color: #856404; margin-bottom: 1rem;">⚠️ Important Information</h4>
+            <ul style="color: #856404; font-size: 0.9rem; margin: 0; padding-left: 1.5rem;">
+                <li>Please carry valid ID proof during travel</li>
+                <li>Arrive at least 30 minutes before departure</li>
+                <li>Cancellation charges may apply</li>
+                {% if route.transport_type == 'FLIGHT' %}
+                    <li>Web check-in opens 24 hours before departure</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ route.route_number }} - {{ route.operator_name }} - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'transport_search' %}" style="color: #667eea; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        ← Back to Search
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div>
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                {% if route.transport_type == 'FLIGHT' %}✈️{% elif route.transport_type == 'TRAIN' %}🚄{% else %}🚌{% endif %}
+                <h1>{{ route.route_number }} - {{ route.operator_name }}</h1>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 2rem; background: #f8f9fa; border-radius: 10px;">
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold;">{{ route.departure_time|time:"H:i" }}</div>
+                    <div>{{ route.source_city }}</div>
+                </div>
+                <div style="text-align: center;">
+                    <div>{{ route.duration_display }}</div>
+                    <div>→</div>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 1.5rem; font-weight: bold;">{{ route.arrival_time|time:"H:i" }}</div>
+                    <div>{{ route.destination_city }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div>
+        <div class="card">
+            <h3>Book This {{ route.get_transport_type_display }}</h3>
+            <div style="font-size: 2rem; font-weight: bold; text-align: center; margin: 1rem 0;">
+                ₹{{ route.base_price }}
+            </div>
+            <div style="text-align: center; margin-bottom: 1rem;">
+                {{ route.available_seats }} seats available
+            </div>
+            {% if user.is_authenticated %}
+                <a href="{% url 'transport_booking' route.id %}?travel_date={{ travel_date }}&passengers={{ passengers }}" class="btn" style="width: 100%; text-align: center;">
+                    Book Now
+                </a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn" style="width: 100%; text-align: center;">
+                    Login to Book
+                </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

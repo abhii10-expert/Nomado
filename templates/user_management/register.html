@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Nomado{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 600px; margin: 2rem auto;">
+    <h2 style="text-align: center; color: #667eea; margin-bottom: 2rem;">Join Nomado</h2>
+    <p style="text-align: center; color: #666; margin-bottom: 2rem;">Create your account and start your travel journey!</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="id_first_name">First Name *</label>
+                <input type="text" name="first_name" id="id_first_name" class="form-control" required value="{{ form.first_name.value|default:'' }}">
+                {% if form.first_name.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {% for error in form.first_name.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_last_name">Last Name *</label>
+                <input type="text" name="last_name" id="id_last_name" class="form-control" required value="{{ form.last_name.value|default:'' }}">
+                {% if form.last_name.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {% for error in form.last_name.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="id_username">Username *</label>
+            <input type="text" name="username" id="id_username" class="form-control" required value="{{ form.username.value|default:'' }}">
+            <small style="color: #666; font-size: 0.9rem;">Letters, digits and @/./+/-/_ only.</small>
+            {% if form.username.errors %}
+                <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                    {% for error in form.username.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_email">Email Address *</label>
+            <input type="email" name="email" id="id_email" class="form-control" required value="{{ form.email.value|default:'' }}">
+            {% if form.email.errors %}
+                <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                    {% for error in form.email.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_phone_number">Phone Number *</label>
+            <input type="text" name="phone_number" id="id_phone_number" class="form-control" required value="{{ form.phone_number.value|default:'' }}">
+            <small style="color: #666; font-size: 0.9rem;">Format: +1234567890 or 1234567890</small>
+            {% if form.phone_number.errors %}
+                <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                    {% for error in form.phone_number.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="form-group">
+            <label for="id_date_of_birth">Date of Birth</label>
+            <input type="date" name="date_of_birth" id="id_date_of_birth" class="form-control" value="{{ form.date_of_birth.value|default:'' }}">
+            <small style="color: #666; font-size: 0.9rem;">Optional - helps us provide age-appropriate recommendations</small>
+            {% if form.date_of_birth.errors %}
+                <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                    {% for error in form.date_of_birth.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+        
+        <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 1.5rem; border-radius: 10px; margin: 1.5rem 0; border-left: 4px solid #667eea;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">🚨 Emergency Contact (Optional but Recommended)</h4>
+            <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">This information will be used for safety features and emergency situations during your travels.</p>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label for="id_emergency_contact_name">Contact Name</label>
+                    <input type="text" name="emergency_contact_name" id="id_emergency_contact_name" class="form-control" value="{{ form.emergency_contact_name.value|default:'' }}">
+                    {% if form.emergency_contact_name.errors %}
+                        <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                            {% for error in form.emergency_contact_name.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_emergency_contact_phone">Contact Phone</label>
+                    <input type="text" name="emergency_contact_phone" id="id_emergency_contact_phone" class="form-control" value="{{ form.emergency_contact_phone.value|default:'' }}">
+                    {% if form.emergency_contact_phone.errors %}
+                        <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                            {% for error in form.emergency_contact_phone.errors %}
+                                <div>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label for="id_password1">Password *</label>
+                <input type="password" name="password1" id="id_password1" class="form-control" required>
+                {% if form.password1.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {% for error in form.password1.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="form-group">
+                <label for="id_password2">Confirm Password *</label>
+                <input type="password" name="password2" id="id_password2" class="form-control" required>
+                {% if form.password2.errors %}
+                    <div style="color: #e74c3c; font-size: 0.9rem; margin-top: 0.5rem;">
+                        {% for error in form.password2.errors %}
+                            <div>{{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="background: #e8f4fd; padding: 1rem; border-radius: 10px; margin: 1rem 0; font-size: 0.9rem; color: #1976d2;">
+            <strong>Password Requirements:</strong>
+            <ul style="margin: 0.5rem 0 0 1.5rem;">
+                <li>At least 8 characters long</li>
+                <li>Cannot be too common or entirely numeric</li>
+                <li>Cannot be too similar to your personal information</li>
+            </ul>
+        </div>
+        
+        {% if form.non_field_errors %}
+            <div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 10px; margin: 1rem 0;">
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        
+        <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 1.1rem;">
+            Create My Account
+        </button>
+    </form>
+    
+    <div style="text-align: center; margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee;">
+        <p>Already have an account? <a href="{% url 'login' %}" style="color: #667eea; font-weight: 500;">Sign in here</a></p>
+    </div>
+</div>
+{% endblock %}

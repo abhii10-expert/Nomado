@@ -1,0 +1,559 @@
+{% extends 'base.html' %}
+
+{% block title %}Location Sharing & SOS - Nomado{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 2rem 0; margin-bottom: 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Safety & Location Sharing</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Stay connected and safe during your travels</p>
+    </div>
+</div>
+
+<div class="container" style="max-width: 1000px; margin: 0 auto; padding: 0 1rem;">
+    <!-- Location Status Card -->
+    <div class="card" style="margin-bottom: 2rem; border-left: 4px solid #e74c3c;">
+        <div style="display: flex; align-items: center; justify-content: between; margin-bottom: 1rem;">
+            <h3 style="color: #e74c3c; margin: 0;">Current Location Status</h3>
+            <span id="locationStatus" style="padding: 0.5rem 1rem; border-radius: 20px; font-size: 0.9rem; font-weight: bold; background: #f8f9fa; color: #6c757d;">
+                Location Not Shared
+            </span>
+        </div>
+        
+        <div id="locationInfo" style="display: none; background: #f8f9fa; padding: 1.5rem; border-radius: 8px;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem;">
+                <div>
+                    <strong>Latitude:</strong> <span id="currentLat">-</span><br>
+                    <strong>Longitude:</strong> <span id="currentLng">-</span>
+                </div>
+                <div>
+                    <strong>Last Updated:</strong> <span id="lastUpdate">-</span><br>
+                    <strong>Accuracy:</strong> <span id="accuracy">-</span>
+                </div>
+            </div>
+            <div style="margin-top: 1rem;">
+                <strong>Address:</strong> <span id="currentAddress">Getting address...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2rem;">
+        <!-- Share Location Card -->
+        <div class="card" style="text-align: center; border-left: 4px solid #28a745;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: #28a745;">📍</div>
+            <h4 style="color: #28a745; margin-bottom: 1rem;">Share My Location</h4>
+            <p style="color: #666; margin-bottom: 1.5rem;">Share your current location with trusted contacts for safety</p>
+            
+            <button id="shareLocationBtn" class="btn" style="background: #28a745; border: none; width: 100%; margin-bottom: 1rem;">
+                <span id="shareButtonText">Start Sharing Location</span>
+                <div id="shareButtonSpinner" style="display: none; margin-left: 0.5rem;">
+                    <div style="width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                </div>
+            </button>
+            
+            <small style="color: #666;">Location updates every 30 seconds when active</small>
+        </div>
+
+        <!-- SOS Alert Card -->
+        <div class="card" style="text-align: center; border-left: 4px solid #dc3545;">
+            <div style="font-size: 3rem; margin-bottom: 1rem; color: #dc3545;">🆘</div>
+            <h4 style="color: #dc3545; margin-bottom: 1rem;">Emergency SOS Alert</h4>
+            <p style="color: #666; margin-bottom: 1.5rem;">Send immediate alert with your location to emergency contacts</p>
+            
+            <button id="sosAlertBtn" class="btn" style="background: #dc3545; border: none; width: 100%; margin-bottom: 1rem;">
+                Send SOS Alert
+            </button>
+            
+            <small style="color: #666;">For emergencies only - alerts all registered contacts</small>
+        </div>
+    </div>
+
+    <!-- Emergency Contacts Section -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem;">
+            <h3 style="color: #667eea; margin: 0;">Emergency Contacts</h3>
+            <button id="addContactBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                Add Contact
+            </button>
+        </div>
+        
+        <div id="contactsList">
+            <!-- Contacts will be loaded here -->
+            <div style="text-align: center; color: #666; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                <p>No emergency contacts added yet</p>
+                <small>Add contacts who should receive your location and emergency alerts</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Location History -->
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Recent Location Shares</h3>
+        <div id="locationHistory">
+            <div style="text-align: center; color: #666; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
+                <p>No location sharing history yet</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Safety Tips -->
+    <div class="card" style="background: #f8f9fa;">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Safety Tips</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div>
+                <h5 style="color: #28a745;">Location Sharing</h5>
+                <ul style="color: #666; line-height: 1.6;">
+                    <li>Share location when traveling to new places</li>
+                    <li>Keep location sharing active during solo trips</li>
+                    <li>Update emergency contacts regularly</li>
+                    <li>Inform contacts about your travel plans</li>
+                </ul>
+            </div>
+            <div>
+                <h5 style="color: #dc3545;">Emergency SOS</h5>
+                <ul style="color: #666; line-height: 1.6;">
+                    <li>Use SOS only in genuine emergencies</li>
+                    <li>Ensure emergency contacts are reliable</li>
+                    <li>Keep your phone charged when traveling</li>
+                    <li>Know local emergency numbers</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Contact Modal -->
+<div id="addContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px;">
+        <h4 style="margin-bottom: 1.5rem;">Add Emergency Contact</h4>
+        <form id="addContactForm">
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Contact Name</label>
+                <input type="text" id="contactName" class="form-control" placeholder="Enter full name" required>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Phone Number</label>
+                <input type="tel" id="contactPhone" class="form-control" placeholder="Enter phone number" required>
+            </div>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Email Address</label>
+                <input type="email" id="contactEmail" class="form-control" placeholder="Enter email address" required>
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Relationship</label>
+                <select id="contactRelationship" class="form-control" required>
+                    <option value="">Select relationship</option>
+                    <option value="family">Family Member</option>
+                    <option value="friend">Friend</option>
+                    <option value="colleague">Colleague</option>
+                    <option value="other">Other</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button type="submit" class="btn" style="flex: 1;">Add Contact</button>
+                <button type="button" id="cancelContactBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- SOS Confirmation Modal -->
+<div id="sosModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center;">
+        <div style="font-size: 4rem; color: #dc3545; margin-bottom: 1rem;">🆘</div>
+        <h3 style="color: #dc3545; margin-bottom: 1rem;">Send SOS Alert?</h3>
+        <p style="margin-bottom: 2rem;">This will immediately send your current location to all emergency contacts with an SOS message.</p>
+        <div style="display: flex; gap: 1rem;">
+            <button id="confirmSosBtn" class="btn" style="background: #dc3545; border: none; flex: 1;">Send SOS Alert</button>
+            <button id="cancelSosBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.pulse-red {
+    animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseRed {
+    0% { background-color: #dc3545; }
+    50% { background-color: #c82333; }
+    100% { background-color: #dc3545; }
+}
+
+.contact-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.contact-item:hover {
+    background: #f8f9fa;
+}
+</style>
+
+<script>
+let watchId = null;
+let isSharing = false;
+let emergencyContacts = JSON.parse(localStorage.getItem('emergencyContacts') || '[]');
+let locationHistory = JSON.parse(localStorage.getItem('locationHistory') || '[]');
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadEmergencyContacts();
+    loadLocationHistory();
+    
+    // Check if already sharing
+    if (localStorage.getItem('isLocationSharing') === 'true') {
+        startLocationSharing();
+    }
+});
+
+// Location Sharing Functions
+document.getElementById('shareLocationBtn').addEventListener('click', function() {
+    if (isSharing) {
+        stopLocationSharing();
+    } else {
+        startLocationSharing();
+    }
+});
+
+function startLocationSharing() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by this browser.');
+        return;
+    }
+    
+    const button = document.getElementById('shareLocationBtn');
+    const buttonText = document.getElementById('shareButtonText');
+    const buttonSpinner = document.getElementById('shareButtonSpinner');
+    
+    buttonText.textContent = 'Getting Location...';
+    buttonSpinner.style.display = 'inline-block';
+    
+    const options = {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 30000
+    };
+    
+    watchId = navigator.geolocation.watchPosition(
+        function(position) {
+            updateLocation(position);
+            if (!isSharing) {
+                isSharing = true;
+                localStorage.setItem('isLocationSharing', 'true');
+                buttonText.textContent = 'Stop Sharing Location';
+                buttonSpinner.style.display = 'none';
+                button.style.background = '#dc3545';
+                document.getElementById('locationStatus').textContent = 'Location Being Shared';
+                document.getElementById('locationStatus').style.background = '#d4edda';
+                document.getElementById('locationStatus').style.color = '#155724';
+            }
+        },
+        function(error) {
+            handleLocationError(error);
+            buttonText.textContent = 'Start Sharing Location';
+            buttonSpinner.style.display = 'none';
+        },
+        options
+    );
+}
+
+function stopLocationSharing() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+    
+    isSharing = false;
+    localStorage.setItem('isLocationSharing', 'false');
+    
+    const button = document.getElementById('shareLocationBtn');
+    const buttonText = document.getElementById('shareButtonText');
+    
+    buttonText.textContent = 'Start Sharing Location';
+    button.style.background = '#28a745';
+    document.getElementById('locationStatus').textContent = 'Location Not Shared';
+    document.getElementById('locationStatus').style.background = '#f8f9fa';
+    document.getElementById('locationStatus').style.color = '#6c757d';
+}
+
+function updateLocation(position) {
+    const lat = position.coords.latitude;
+    const lng = position.coords.longitude;
+    const accuracy = position.coords.accuracy;
+    
+    document.getElementById('currentLat').textContent = lat.toFixed(6);
+    document.getElementById('currentLng').textContent = lng.toFixed(6);
+    document.getElementById('accuracy').textContent = accuracy.toFixed(0) + ' meters';
+    document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
+    document.getElementById('locationInfo').style.display = 'block';
+    
+    // Get address from coordinates (reverse geocoding)
+    getAddressFromCoords(lat, lng);
+    
+    // Save to history
+    const locationData = {
+        lat: lat,
+        lng: lng,
+        timestamp: new Date().toISOString(),
+        accuracy: accuracy
+    };
+    
+    locationHistory.unshift(locationData);
+    if (locationHistory.length > 10) locationHistory.pop(); // Keep only last 10
+    localStorage.setItem('locationHistory', JSON.stringify(locationHistory));
+    loadLocationHistory();
+    
+    // Here you would typically send location to your server
+    sendLocationToServer(locationData);
+}
+
+function getAddressFromCoords(lat, lng) {
+    // Using a simple reverse geocoding service (you can replace with your preferred service)
+    fetch(`https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=YOUR_API_KEY`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.results && data.results[0]) {
+                document.getElementById('currentAddress').textContent = data.results[0].formatted;
+            } else {
+                document.getElementById('currentAddress').textContent = 'Address not available';
+            }
+        })
+        .catch(error => {
+            document.getElementById('currentAddress').textContent = 'Address lookup failed';
+        });
+}
+
+function handleLocationError(error) {
+    let message = '';
+    switch(error.code) {
+        case error.PERMISSION_DENIED:
+            message = "Location access denied by user.";
+            break;
+        case error.POSITION_UNAVAILABLE:
+            message = "Location information is unavailable.";
+            break;
+        case error.TIMEOUT:
+            message = "Location request timed out.";
+            break;
+        default:
+            message = "An unknown error occurred.";
+            break;
+    }
+    alert(message);
+}
+
+// SOS Alert Functions
+document.getElementById('sosAlertBtn').addEventListener('click', function() {
+    if (emergencyContacts.length === 0) {
+        alert('Please add emergency contacts first before sending SOS alerts.');
+        return;
+    }
+    document.getElementById('sosModal').style.display = 'block';
+});
+
+document.getElementById('confirmSosBtn').addEventListener('click', function() {
+    sendSOSAlert();
+    document.getElementById('sosModal').style.display = 'none';
+});
+
+document.getElementById('cancelSosBtn').addEventListener('click', function() {
+    document.getElementById('sosModal').style.display = 'none';
+});
+
+function sendSOSAlert() {
+    if (!navigator.geolocation) {
+        alert('Geolocation is not supported by this browser.');
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            const sosData = {
+                lat: lat,
+                lng: lng,
+                timestamp: new Date().toISOString(),
+                message: 'EMERGENCY: I need help! This is my current location.',
+                contacts: emergencyContacts
+            };
+            
+            // Here you would send SOS to your server and notification service
+            sendSOSToServer(sosData);
+            
+            alert('SOS Alert sent to all emergency contacts with your location!');
+        },
+        function(error) {
+            handleLocationError(error);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+    );
+}
+
+// Emergency Contacts Functions
+document.getElementById('addContactBtn').addEventListener('click', function() {
+    document.getElementById('addContactModal').style.display = 'block';
+});
+
+document.getElementById('cancelContactBtn').addEventListener('click', function() {
+    document.getElementById('addContactModal').style.display = 'none';
+    document.getElementById('addContactForm').reset();
+});
+
+document.getElementById('addContactForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const contact = {
+        id: Date.now(),
+        name: document.getElementById('contactName').value,
+        phone: document.getElementById('contactPhone').value,
+        email: document.getElementById('contactEmail').value,
+        relationship: document.getElementById('contactRelationship').value
+    };
+    
+    emergencyContacts.push(contact);
+    localStorage.setItem('emergencyContacts', JSON.stringify(emergencyContacts));
+    
+    loadEmergencyContacts();
+    document.getElementById('addContactModal').style.display = 'none';
+    document.getElementById('addContactForm').reset();
+});
+
+function loadEmergencyContacts() {
+    const contactsList = document.getElementById('contactsList');
+    
+    if (emergencyContacts.length === 0) {
+        contactsList.innerHTML = `
+            <div style="text-align: center; color: #666; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                <p>No emergency contacts added yet</p>
+                <small>Add contacts who should receive your location and emergency alerts</small>
+            </div>
+        `;
+        return;
+    }
+    
+    contactsList.innerHTML = emergencyContacts.map(contact => `
+        <div class="contact-item">
+            <div>
+                <strong>${contact.name}</strong> <span style="color: #666;">(${contact.relationship})</span><br>
+                <small style="color: #666;">📞 ${contact.phone} | ✉️ ${contact.email}</small>
+            </div>
+            <button onclick="removeContact(${contact.id})" class="btn btn-secondary" style="padding: 0.5rem;">
+                Remove
+            </button>
+        </div>
+    `).join('');
+}
+
+function removeContact(contactId) {
+    emergencyContacts = emergencyContacts.filter(contact => contact.id !== contactId);
+    localStorage.setItem('emergencyContacts', JSON.stringify(emergencyContacts));
+    loadEmergencyContacts();
+}
+
+function loadLocationHistory() {
+    const historyDiv = document.getElementById('locationHistory');
+    
+    if (locationHistory.length === 0) {
+        historyDiv.innerHTML = `
+            <div style="text-align: center; color: #666; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
+                <p>No location sharing history yet</p>
+            </div>
+        `;
+        return;
+    }
+    
+    historyDiv.innerHTML = locationHistory.slice(0, 5).map(location => `
+        <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <strong>Location Shared</strong><br>
+                    <small style="color: #666;">
+                        ${new Date(location.timestamp).toLocaleString()} | 
+                        Accuracy: ${location.accuracy.toFixed(0)}m
+                    </small>
+                </div>
+                <a href="https://maps.google.com/?q=${location.lat},${location.lng}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                    View on Map
+                </a>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Server Communication Functions (replace with actual API endpoints)
+function sendLocationToServer(locationData) {
+    // Replace with your actual API endpoint
+    fetch('/api/location/update', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(locationData)
+    }).catch(error => {
+        console.log('Location update failed:', error);
+    });
+}
+
+function sendSOSToServer(sosData) {
+    // Replace with your actual API endpoint
+    fetch('/api/sos/alert', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify(sosData)
+    }).catch(error => {
+        console.log('SOS alert failed:', error);
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Close modals when clicking outside
+window.onclick = function(event) {
+    const addModal = document.getElementById('addContactModal');
+    const sosModal = document.getElementById('sosModal');
+    
+    if (event.target === addModal) {
+        addModal.style.display = 'none';
+        document.getElementById('addContactForm').reset();
+    }
+    if (event.target === sosModal) {
+        sosModal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}

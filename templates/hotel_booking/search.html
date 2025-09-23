@@ -1,0 +1,335 @@
+{% extends 'base.html' %}
+
+{% block title %}Hotel Search - Nomado{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-bottom: 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Find Your Perfect Stay</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Search and compare hotels based on cleanliness, comfort, and safety ratings</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Search Hotels</h3>
+    
+    <form method="get" id="searchForm">
+        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+                <label for="city">Destination</label>
+                <input type="text" name="city" id="city" class="form-control" placeholder="Enter city, state, or hotel name" value="{{ request.GET.city }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="check_in_date">Check-in</label>
+                <input type="date" name="check_in_date" id="check_in_date" class="form-control" value="{{ request.GET.check_in_date }}" min="{{ today }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="check_out_date">Check-out</label>
+                <input type="date" name="check_out_date" id="check_out_date" class="form-control" value="{{ request.GET.check_out_date }}" min="{{ tomorrow }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="guests">Guests</label>
+                <select name="guests" id="guests" class="form-control">
+                    <option value="1" {% if request.GET.guests == "1" %}selected{% endif %}>1 Guest</option>
+                    <option value="2" {% if request.GET.guests == "2" %}selected{% endif %}>2 Guests</option>
+                    <option value="3" {% if request.GET.guests == "3" %}selected{% endif %}>3 Guests</option>
+                    <option value="4" {% if request.GET.guests == "4" %}selected{% endif %}>4 Guests</option>
+                    <option value="5" {% if request.GET.guests == "5" %}selected{% endif %}>5+ Guests</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="rooms">Rooms</label>
+                <select name="rooms" id="rooms" class="form-control">
+                    <option value="1" {% if request.GET.rooms == "1" %}selected{% endif %}>1 Room</option>
+                    <option value="2" {% if request.GET.rooms == "2" %}selected{% endif %}>2 Rooms</option>
+                    <option value="3" {% if request.GET.rooms == "3" %}selected{% endif %}>3 Rooms</option>
+                    <option value="4" {% if request.GET.rooms == "4" %}selected{% endif %}>4 Rooms</option>
+                    <option value="5" {% if request.GET.rooms == "5" %}selected{% endif %}>5 Rooms</option>
+                </select>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div style="border-top: 1px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Filters</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="budget">Budget per night</label>
+                    <select name="budget" id="budget" class="form-control">
+                        <option value="">Any Budget</option>
+                        <option value="0-2000" {% if request.GET.budget == "0-2000" %}selected{% endif %}>Under ₹2,000</option>
+                        <option value="2000-5000" {% if request.GET.budget == "2000-5000" %}selected{% endif %}>₹2,000 - ₹5,000</option>
+                        <option value="5000-10000" {% if request.GET.budget == "5000-10000" %}selected{% endif %}>₹5,000 - ₹10,000</option>
+                        <option value="10000-999999" {% if request.GET.budget == "10000-999999" %}selected{% endif %}>Above ₹10,000</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="min_rating">Minimum Rating</label>
+                    <select name="min_rating" id="min_rating" class="form-control">
+                        <option value="">Any Rating</option>
+                        <option value="3" {% if request.GET.min_rating == "3" %}selected{% endif %}>3+ Stars</option>
+                        <option value="4" {% if request.GET.min_rating == "4" %}selected{% endif %}>4+ Stars</option>
+                        <option value="4.5" {% if request.GET.min_rating == "4.5" %}selected{% endif %}>4.5+ Stars</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: end;">
+                    <label style="width: 100%; margin-bottom: 0.5rem;">Amenities</label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="wifi" {% if request.GET.wifi %}checked{% endif %}> WiFi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="parking" {% if request.GET.parking %}checked{% endif %}> Parking
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="restaurant" {% if request.GET.restaurant %}checked{% endif %}> Restaurant
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="pool" {% if request.GET.pool %}checked{% endif %}> Pool
+                    </label>
+                </div>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn" style="padding: 12px 30px; font-size: 1.1rem;">
+            🔍 Search Hotels
+        </button>
+    </form>
+</div>
+
+{% if search_performed %}
+    <div style="margin-bottom: 2rem;">
+        <h3 style="color: #667eea;">Search Results</h3>
+        <p style="color: #666;">{{ total_results }} hotel{{ total_results|pluralize }} found</p>
+    </div>
+    
+    {% if hotels %}
+        <div style="display: grid; gap: 2rem;">
+            {% for hotel in hotels %}
+                <div class="card" style="display: grid; grid-template-columns: 300px 1fr auto; gap: 2rem; align-items: start;">
+                    <div style="position: relative;">
+                        {% if hotel.images.all %}
+                            <img src="{{ hotel.images.first.image.url }}" alt="{{ hotel.name }}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 10px;">
+                        {% else %}
+                            <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.2rem;">
+                                📸 No Image
+                            </div>
+                        {% endif %}
+                        
+                        {% if hotel.featured %}
+                            <span style="position: absolute; top: 10px; left: 10px; background: #ff6b6b; color: white; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: bold;">
+                                ⭐ Featured
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        <h3 style="color: #333; margin-bottom: 0.5rem;">{{ hotel.name }}</h3>
+                        <p style="color: #666; margin-bottom: 1rem;">📍 {{ hotel.address }}, {{ hotel.city }}, {{ hotel.state }}</p>
+                        
+                        <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                            <div style="text-align: center; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; min-width: 80px;">
+                                <div style="font-weight: bold; color: #667eea;">{{ hotel.cleanliness_rating|floatformat:1 }}</div>
+                                <small style="color: #666;">Cleanliness</small>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; min-width: 80px;">
+                                <div style="font-weight: bold; color: #667eea;">{{ hotel.comfort_rating|floatformat:1 }}</div>
+                                <small style="color: #666;">Comfort</small>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: #f8f9fa; border-radius: 8px; min-width: 80px;">
+                                <div style="font-weight: bold; color: #667eea;">{{ hotel.safety_rating|floatformat:1 }}</div>
+                                <small style="color: #666;">Safety</small>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;">
+                            {% if hotel.wifi %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">📶 WiFi</span>{% endif %}
+                            {% if hotel.parking %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🚗 Parking</span>{% endif %}
+                            {% if hotel.restaurant %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🍽️ Restaurant</span>{% endif %}
+                            {% if hotel.pool %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🏊 Pool</span>{% endif %}
+                            {% if hotel.gym %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">💪 Gym</span>{% endif %}
+                            {% if hotel.air_conditioning %}<span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">❄️ AC</span>{% endif %}
+                        </div>
+                        
+                        <p style="color: #666; font-size: 0.9rem; line-height: 1.5;">{{ hotel.description|truncatewords:20 }}</p>
+                    </div>
+                    
+                    <div style="text-align: right;">
+                        <div style="margin-bottom: 1rem;">
+                            <div style="font-size: 2rem; font-weight: bold; color: #333;">₹{{ hotel.price_per_night|floatformat:0 }}</div>
+                            <small style="color: #666;">per night</small>
+                        </div>
+                        
+                        <div style="margin-bottom: 1rem;">
+                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.5rem;">
+                                <span style="font-weight: bold; color: #667eea; font-size: 1.2rem;">{{ hotel.overall_rating|floatformat:1 }}</span>
+                                <div style="color: #ffa500;">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= hotel.overall_rating %}⭐{% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <small style="color: #666;">Overall Rating</small>
+                        </div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <a href="{% url 'hotel_detail' hotel.id %}?check_in={{ request.GET.check_in_date }}&check_out={{ request.GET.check_out_date }}&guests={{ request.GET.guests }}&rooms={{ request.GET.rooms }}" class="btn" style="text-align: center;">
+                                View Details
+                            </a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'hotel_booking' hotel.id %}?check_in={{ request.GET.check_in_date }}&check_out={{ request.GET.check_out_date }}&guests={{ request.GET.guests }}&rooms={{ request.GET.rooms }}" class="btn btn-secondary" style="text-align: center;">
+                                    Book Now
+                                </a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn btn-secondary" style="text-align: center;">
+                                    Login to Book
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if hotels.has_other_pages %}
+            <div style="text-align: center; margin: 3rem 0;">
+                <div style="display: inline-flex; gap: 0.5rem;">
+                    {% if hotels.has_previous %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ hotels.previous_page_number }}" class="btn">Previous</a>
+                    {% endif %}
+                    
+                    {% for num in hotels.paginator.page_range %}
+                        {% if num == hotels.number %}
+                            <span style="padding: 8px 16px; background: #667eea; color: white; border-radius: 5px;">{{ num }}</span>
+                        {% else %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" style="padding: 8px 16px; color: #667eea; text-decoration: none; border: 1px solid #667eea; border-radius: 5px;">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if hotels.has_next %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ hotels.next_page_number }}" class="btn">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">No Hotels Found</h3>
+            <p style="color: #666; margin-bottom: 2rem;">Try adjusting your search criteria or removing some filters.</p>
+            <a href="{% url 'hotel_search' %}" class="btn">Clear Filters</a>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Featured Hotels Section -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Featured Hotels</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <!-- Sample featured hotels - you can add real data here -->
+            <div class="card" style="text-align: center;">
+                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin-bottom: 1rem;">
+                    🏨
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Luxury Grand Hotel</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Mumbai, Maharashtra</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">📶 WiFi</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🏊 Pool</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🍽️ Restaurant</span>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: #333; margin-bottom: 1rem;">₹5,500/night</div>
+                <button class="btn" onclick="document.getElementById('city').value='Mumbai'; document.getElementById('searchForm').submit();">
+                    Search in Mumbai
+                </button>
+            </div>
+            
+            <div class="card" style="text-align: center;">
+                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #764ba2 0%, #667eea 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin-bottom: 1rem;">
+                    🏖️
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Beach Resort Paradise</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Goa, India</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🌊 Beach</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🚗 Parking</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">💪 Gym</span>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: #333; margin-bottom: 1rem;">₹8,200/night</div>
+                <button class="btn" onclick="document.getElementById('city').value='Goa'; document.getElementById('searchForm').submit();">
+                    Search in Goa
+                </button>
+            </div>
+            
+            <div class="card" style="text-align: center;">
+                <div style="width: 100%; height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem; margin-bottom: 1rem;">
+                    🏔️
+                </div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Mountain View Lodge</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Manali, Himachal Pradesh</p>
+                <div style="display: flex; justify-content: center; gap: 1rem; margin-bottom: 1rem;">
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🔥 Fireplace</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">📶 WiFi</span>
+                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 15px; font-size: 0.8rem;">🍽️ Restaurant</span>
+                </div>
+                <div style="font-size: 1.5rem; font-weight: bold; color: #333; margin-bottom: 1rem;">₹3,800/night</div>
+                <button class="btn" onclick="document.getElementById('city').value='Manali'; document.getElementById('searchForm').submit();">
+                    Search in Manali
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Popular Destinations -->
+    <div style="margin-top: 3rem;">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Popular Destinations</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Mumbai'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🏙️ Mumbai
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Delhi'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🏛️ Delhi
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Bangalore'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🌆 Bangalore
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Goa'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🏖️ Goa
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Jaipur'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🏰 Jaipur
+            </button>
+            <button class="btn btn-secondary" onclick="document.getElementById('city').value='Kerala'; document.getElementById('searchForm').submit();" style="padding: 1rem; text-align: center;">
+                🌴 Kerala
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    // Set minimum dates
+    const today = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date(new Date().getTime() + 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+    
+    document.getElementById('check_in_date').min = today;
+    document.getElementById('check_out_date').min = tomorrow;
+    
+    // Update checkout min date when checkin changes
+    document.getElementById('check_in_date').addEventListener('change', function() {
+        const checkIn = new Date(this.value);
+        const checkOut = new Date(checkIn.getTime() + 24 * 60 * 60 * 1000);
+        document.getElementById('check_out_date').min = checkOut.toISOString().split('T')[0];
+    });
+    
+    // Auto-submit form when popular destinations are clicked
+    function searchCity(city) {
+        document.getElementById('city').value = city;
+        document.getElementById('searchForm').submit();
+    }
+</script>
+{% endblock %}

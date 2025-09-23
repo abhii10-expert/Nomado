@@ -1,0 +1,225 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment - {{ booking.hotel.name }} - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">Complete Your Payment</h1>
+    <p style="color: #666;">Secure your booking at {{ booking.hotel.name }}</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+    <!-- Payment Section -->
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 2rem;">Secure Payment</h3>
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💳</div>
+            <h4 style="color: #333;">Pay with Razorpay</h4>
+            <p style="color: #666;">Secure payment gateway with multiple payment options</p>
+        </div>
+        
+        <div style="background: #f8f9fa; padding: 2rem; border-radius: 10px; text-align: center;">
+            <div style="font-size: 2.5rem; font-weight: bold; color: #333; margin-bottom: 1rem;">
+                ₹{{ booking.total_amount|floatformat:0 }}
+            </div>
+            
+            <button id="razorpay-button" class="btn" style="padding: 15px 30px; font-size: 1.2rem; font-weight: 600;">
+                Pay Now with Razorpay
+            </button>
+            
+            <div style="margin-top: 1rem; font-size: 0.9rem; color: #666;">
+                <div style="display: flex; align-items: center; justify-content: center; gap: 1rem; margin-top: 1rem;">
+                    <span>💳 Cards</span>
+                    <span>📱 UPI</span>
+                    <span>🏦 NetBanking</span>
+                    <span>👛 Wallets</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Payment Security Info -->
+        <div style="margin-top: 2rem; padding: 1.5rem; background: #e8f4fd; border-radius: 10px;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;">
+                <span style="font-size: 1.5rem;">🔒</span>
+                <strong style="color: #1976d2;">100% Secure Payment</strong>
+            </div>
+            <ul style="color: #1976d2; font-size: 0.9rem; margin: 0; padding-left: 1.5rem;">
+                <li>256-bit SSL encryption</li>
+                <li>PCI DSS compliant</li>
+                <li>No card details stored</li>
+                <li>Instant payment confirmation</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- Booking Summary -->
+    <div>
+        <div class="card">
+            <h3 style="color: #667eea; margin-bottom: 1.5rem;">Booking Summary</h3>
+            
+            <div style="margin-bottom: 1rem;">
+                <strong style="color: #333;">{{ booking.hotel.name }}</strong>
+                <div style="color: #666; font-size: 0.9rem;">{{ booking.hotel.address }}, {{ booking.hotel.city }}</div>
+            </div>
+            
+            <div style="display: grid; gap: 1rem; margin: 1.5rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Check-in:</span>
+                    <strong>{{ booking.check_in_date|date:"M d, Y" }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Check-out:</span>
+                    <strong>{{ booking.check_out_date|date:"M d, Y" }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Nights:</span>
+                    <strong>{{ booking.nights }} night{{ booking.nights|pluralize }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Rooms:</span>
+                    <strong>{{ booking.rooms }} room{{ booking.rooms|pluralize }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Guests:</span>
+                    <strong>{{ booking.guests }} guest{{ booking.guests|pluralize }}</strong>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Room charges ({{ booking.nights }} nights)</span>
+                    <span>₹{{ booking.price_per_night|floatformat:0 }} × {{ booking.nights }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Taxes & fees</span>
+                    <span>₹{{ booking.price_per_night|floatformat:0 }}</span>
+                </div>
+                <hr>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; color: #333;">
+                    <span>Total Amount</span>
+                    <span>₹{{ booking.total_amount|floatformat:0 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="card" style="margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Information</h4>
+            <div style="font-size: 0.9rem; color: #666;">
+                <div><strong>{{ booking.contact_name }}</strong></div>
+                <div>{{ booking.contact_phone }}</div>
+                <div>{{ booking.contact_email }}</div>
+            </div>
+        </div>
+        
+        <!-- Booking ID -->
+        <div class="card" style="margin-top: 1rem; background: #d4edda;">
+            <div style="text-align: center;">
+                <strong style="color: #155724;">Booking ID: {{ booking.booking_id }}</strong>
+                <div style="color: #155724; font-size: 0.9rem; margin-top: 0.5rem;">Save this ID for future reference</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+document.getElementById('razorpay-button').onclick = function(e) {
+    e.preventDefault();
+    
+    var options = {
+        "key": "{{ razorpay_key_id }}",
+        "amount": { razorpay_amount },
+        "currency": "INR",
+        "name": "Nomado",
+        "description": "Hotel Booking - {{ booking.hotel.name }}",
+        "image": "/static/images/logo.png",
+        "order_id": "{{ razorpay_order_id }}",
+        "handler": function (response) {
+            verifyPayment(response);
+        },
+        "prefill": {
+            "name": "{{ user_name }}",
+            "email": "{{ user_email }}",
+            "contact": "{{ user_phone }}"
+        },
+        "notes": {
+            "booking_id": "{{ booking.booking_id }}",
+            "hotel_name": "{{ booking.hotel.name }}"
+        },
+        "theme": {
+            "color": "#667eea"
+        },
+        "modal": {
+            "ondismiss": function() {
+                console.log('Payment dialog closed');
+            }
+        }
+    };
+    
+    var rzp1 = new Razorpay(options);
+    rzp1.on('payment.failed', function (response) {
+        alert('Payment failed: ' + response.error.description);
+    });
+    
+    rzp1.open();
+}
+
+function verifyPayment(response) {
+    // Show loading
+    document.getElementById('razorpay-button').innerHTML = '⏳ Verifying Payment...';
+    document.getElementById('razorpay-button').disabled = true;
+    
+    // Send payment details to server for verification
+    fetch('/hotels/verify-payment/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            razorpay_order_id: response.razorpay_order_id,
+            razorpay_payment_id: response.razorpay_payment_id,
+            razorpay_signature: response.razorpay_signature,
+            booking_id: "{{ booking.booking_id }}"
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Payment verified successfully
+            alert(data.message);
+            window.location.href = data.redirect_url;
+        } else {
+            // Payment verification failed
+            alert(data.message);
+            document.getElementById('razorpay-button').innerHTML = 'Pay Now with Razorpay';
+            document.getElementById('razorpay-button').disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Payment verification failed. Please contact support.');
+        document.getElementById('razorpay-button').innerHTML = 'Pay Now with Razorpay';
+        document.getElementById('razorpay-button').disabled = false;
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

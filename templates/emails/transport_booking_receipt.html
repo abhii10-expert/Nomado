@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transport Booking Confirmation - Nomado</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f8f9fa;
+            padding: 20px;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .content {
+            padding: 30px 20px;
+        }
+        .booking-details {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            font-weight: bold;
+            color: #28a745;
+            font-size: 18px;
+        }
+        .route-info {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .journey-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0;
+            padding: 20px;
+            background: #fff3cd;
+            border-radius: 8px;
+        }
+        .journey-point {
+            text-align: center;
+            flex: 1;
+        }
+        .journey-line {
+            flex: 2;
+            height: 2px;
+            background: #007bff;
+            position: relative;
+        }
+        .journey-line::after {
+            content: '→';
+            position: absolute;
+            right: -10px;
+            top: -10px;
+            color: #007bff;
+            font-size: 20px;
+        }
+        .payment-info {
+            background: #d4edda;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #28a745;
+            margin-bottom: 10px;
+        }
+        .passenger-list {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">
+            <div class="success-icon">✓</div>
+            <h1>Booking Confirmed!</h1>
+            <p>Thank you for choosing Nomado</p>
+        </div>
+        
+        <div class="content">
+            <h2>Dear {{ user.get_full_name|default:user.username }},</h2>
+            <p>Your transportation booking has been successfully confirmed. Here are your travel details:</p>
+            
+            <div class="route-info">
+                <h3>
+                    {% if booking.route.transport_type == 'FLIGHT' %}✈️
+                    {% elif booking.route.transport_type == 'TRAIN' %}🚄
+                    {% else %}🚌{% endif %}
+                    {{ booking.route.operator_name }} - {{ booking.route.route_number }}
+                </h3>
+                <p><strong>Service:</strong> {{ booking.route.get_transport_type_display }}</p>
+            </div>
+            
+            <div class="journey-timeline">
+                <div class="journey-point">
+                    <div style="font-size: 18px; font-weight: bold;">{{ booking.route.departure_time|time:"H:i" }}</div>
+                    <div style="color: #666;">{{ booking.route.source_city }}</div>
+                    <div style="font-size: 12px; color: #999;">{{ booking.route.source_station|default:"" }}</div>
+                </div>
+                <div class="journey-line"></div>
+                <div class="journey-point">
+                    <div style="font-size: 18px; font-weight: bold;">{{ booking.route.arrival_time|time:"H:i" }}</div>
+                    <div style="color: #666;">{{ booking.route.destination_city }}</div>
+                    <div style="font-size: 12px; color: #999;">{{ booking.route.destination_station|default:"" }}</div>
+                </div>
+            </div>
+            
+            <div class="booking-details">
+                <h3>📋 Booking Details</h3>
+                <div class="detail-row">
+                    <span><strong>Booking ID:</strong></span>
+                    <span>{{ booking.booking_id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Travel Date:</strong></span>
+                    <span>{{ booking.travel_date|date:"M d, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Number of Passengers:</strong></span>
+                    <span>{{ booking.passengers }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Class:</strong></span>
+                    <span>{{ booking.get_class_type_display|default:"Standard" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Total Amount Paid:</strong></span>
+                    <span>₹{{ booking.total_amount }}</span>
+                </div>
+            </div>
+            
+            {% if booking.passenger_names %}
+            <div class="passenger-list">
+                <h4>👥 Passenger Details</h4>
+                {% with passenger_names=booking.passenger_names|slice:"1:-1"|split:'","' %}
+                {% with passenger_ages=booking.passenger_ages|slice:"1:-1"|split:'", "' %}
+                {% with passenger_genders=booking.passenger_genders|slice:"1:-1"|split:'", "' %}
+                <div style="display: grid; gap: 10px;">
+                    {% for name in passenger_names %}
+                    <div style="display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #eee;">
+                        <span><strong>{{ forloop.counter }}. {{ name }}</strong></span>
+                        <span>{{ passenger_ages|get_item:forloop.counter0 }} years, {{ passenger_genders|get_item:forloop.counter0 }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endwith %}
+                {% endwith %}
+                {% endwith %}
+            </div>
+            {% endif %}
+            
+            <div class="payment-info">
+                <h3>💳 Payment Information</h3>
+                <div class="detail-row">
+                    <span><strong>Transaction ID:</strong></span>
+                    <span>{{ transaction.transaction_id }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Payment Date:</strong></span>
+                    <span>{{ transaction.completed_at|date:"M d, Y - H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span><strong>Payment Status:</strong></span>
+                    <span style="color: #28a745;">✓ Successful</span>
+                </div>
+                {% if invoice %}
+                <div class="detail-row">
+                    <span><strong>Invoice Number:</strong></span>
+                    <span>{{ invoice.invoice_number }}</span>
+                </div>
+                {% endif %}
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+                <a href="https://nomado.com/transport/booking/{{ booking.booking_id }}/" class="btn">View Booking Details</a>
+            </div>
+            
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border: 1px solid #ffeaa7;">
+                <h4>📱 Important Information:</h4>
+                <ul>
+                    <li>Please carry a valid photo ID for travel</li>
+                    <li>Report at the departure point at least 30 minutes before departure time</li>
+                    <li>Keep this email as your booking confirmation</li>
+                    <li>Contact the operator for any schedule changes or queries</li>
+                    {% if booking.route.transport_type == 'FLIGHT' %}
+                    <li>Check baggage allowance and restrictions</li>
+                    <li>Complete web check-in 2-24 hours before departure</li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Need help? Contact us at support@nomado.com or call +91-XXXX-XXXXXX</p>
+            <p>Thank you for choosing Nomado for your travel needs!</p>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">
+                This is an automated message. Please do not reply to this email.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

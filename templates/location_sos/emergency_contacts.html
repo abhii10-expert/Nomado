@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+
+{% block title %}Emergency Contacts - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">Emergency Contacts</h1>
+    <p style="color: #666;">Manage your emergency contacts for SOS alerts and location sharing</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Your Emergency Contacts</h3>
+        
+        {% if contacts %}
+            <div style="display: grid; gap: 1rem;">
+                {% for contact in contacts %}
+                <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa;">
+                    <div>
+                        <div style="font-weight: bold; color: #333;">{{ contact.name }}</div>
+                        <div style="color: #666;">{{ contact.phone_number }}</div>
+                        {% if contact.email %}
+                            <div style="color: #666; font-size: 0.9rem;">{{ contact.email }}</div>
+                        {% endif %}
+                        <div style="color: #666; font-size: 0.9rem;">{{ contact.get_relationship_display|default:contact.relationship }}</div>
+                        {% if contact.is_primary %}
+                            <span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">Primary</span>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <a href="?edit={{ contact.id }}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                        <form method="post" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="delete">
+                            <input type="hidden" name="contact_id" value="{{ contact.id }}">
+                            <button type="submit" class="btn" style="background: #e74c3c; padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Remove this emergency contact?')">Remove</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div style="text-align: center; padding: 3rem; color: #666;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">👥</div>
+                <h4>No Emergency Contacts</h4>
+                <p>Add at least one emergency contact for safety features</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">
+            {% if editing %}Edit Contact{% else %}Add New Contact{% endif %}
+        </h3>
+        
+        <form method="post">
+            {% csrf_token %}
+            {% if editing %}
+                <input type="hidden" name="action" value="edit">
+                <input type="hidden" name="contact_id" value="{{ editing.id }}">
+            {% else %}
+                <input type="hidden" name="action" value="add">
+            {% endif %}
+            
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" name="name" id="name" class="form-control" value="{% if editing %}{{ editing.name }}{% endif %}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone_number">Phone Number</label>
+                <input type="text" name="phone_number" id="phone_number" class="form-control" value="{% if editing %}{{ editing.phone_number }}{% endif %}" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Email (Optional)</label>
+                <input type="email" name="email" id="email" class="form-control" value="{% if editing %}{{ editing.email }}{% endif %}">
+            </div>
+            
+            <div class="form-group">
+                <label for="relationship">Relationship</label>
+                <select name="relationship" id="relationship" class="form-control" required>
+                    <option value="">Select relationship</option>
+                    <option value="FAMILY" {% if editing and editing.relationship == 'FAMILY' %}selected{% endif %}>Family Member</option>
+                    <option value="FRIEND" {% if editing and editing.relationship == 'FRIEND' %}selected{% endif %}>Friend</option>
+                    <option value="COLLEAGUE" {% if editing and editing.relationship == 'COLLEAGUE' %}selected{% endif %}>Colleague</option>
+                    <option value="SPOUSE" {% if editing and editing.relationship == 'SPOUSE' %}selected{% endif %}>Spouse</option>
+                    <option value="PARENT" {% if editing and editing.relationship == 'PARENT' %}selected{% endif %}>Parent</option>
+                    <option value="SIBLING" {% if editing and editing.relationship == 'SIBLING' %}selected{% endif %}>Sibling</option>
+                    <option value="RELATIVE" {% if editing and editing.relationship == 'RELATIVE' %}selected{% endif %}>Relative</option>
+                    <option value="OTHER" {% if editing and editing.relationship == 'OTHER' %}selected{% endif %}>Other</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 0.5rem;">
+                    <input type="checkbox" name="is_primary" {% if editing and editing.is_primary %}checked{% endif %}> Primary Contact
+                </label>
+                <small style="color: #666;">Primary contact will be notified first in emergencies</small>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%;">
+                {% if editing %}Update Contact{% else %}Add Contact{% endif %}
+            </button>
+            
+            {% if editing %}
+                <a href="?" class="btn btn-secondary" style="width: 100%; text-align: center; margin-top: 0.5rem;">Cancel</a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+{% if messages %}
+    <div style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
+        {% for message in messages %}
+            <div class="message-alert message-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <script>
+        // Auto-hide messages after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.message-alert');
+            alerts.forEach(alert => alert.style.display = 'none');
+        }, 5000);
+    </script>
+{% endif %}
+
+<style>
+.message-alert {
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.message-success {
+    background: #d4edda;
+    border: 1px solid #c3e6cb;
+    color: #155724;
+}
+
+.message-error {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.message-warning {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.message-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+</style>
+{% endblock %}

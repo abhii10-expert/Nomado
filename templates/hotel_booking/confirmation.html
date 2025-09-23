@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmed - Nomado{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin: 2rem 0;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+    <h1 style="color: #27ae60; margin-bottom: 1rem;">Booking Confirmed!</h1>
+    <p style="color: #666; font-size: 1.1rem;">Your hotel booking has been successfully confirmed</p>
+</div>
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card" style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1rem;">Booking ID: {{ booking.booking_id }}</h2>
+        <p style="opacity: 0.9; font-size: 1.1rem;">Save this booking ID for future reference</p>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Booking Details</h3>
+        
+        <div style="margin-bottom: 2rem;">
+            <h4 style="color: #333;">{{ booking.hotel.name }}</h4>
+            <p style="color: #666;">{{ booking.hotel.address }}, {{ booking.hotel.city }}</p>
+            <p style="color: #666;">Phone: {{ booking.hotel.phone }}</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+            <div>
+                <strong>Check-in Date</strong>
+                <div style="font-size: 1.2rem; color: #667eea;">{{ booking.check_in_date|date:"l, F d, Y" }}</div>
+            </div>
+            <div>
+                <strong>Check-out Date</strong>
+                <div style="font-size: 1.2rem; color: #667eea;">{{ booking.check_out_date|date:"l, F d, Y" }}</div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+            <div style="text-align: center;">
+                <strong>Nights</strong>
+                <div style="font-size: 1.5rem; color: #667eea;">{{ booking.nights }}</div>
+            </div>
+            <div style="text-align: center;">
+                <strong>Rooms</strong>
+                <div style="font-size: 1.5rem; color: #667eea;">{{ booking.rooms }}</div>
+            </div>
+            <div style="text-align: center;">
+                <strong>Guests</strong>
+                <div style="font-size: 1.5rem; color: #667eea;">{{ booking.guests }}</div>
+            </div>
+        </div>
+        
+        <div style="border-top: 2px solid #667eea; padding-top: 1rem; text-align: center;">
+            <strong style="font-size: 1.3rem; color: #333;">Total Amount Paid: ₹{{ booking.total_amount|floatformat:0 }}</strong>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 1rem;">
+        <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Information</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <strong>Guest Name:</strong> {{ booking.contact_name }}
+            </div>
+            <div>
+                <strong>Phone:</strong> {{ booking.contact_phone }}
+            </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+            <strong>Email:</strong> {{ booking.contact_email }}
+        </div>
+        {% if booking.special_requests %}
+            <div style="margin-top: 1rem;">
+                <strong>Special Requests:</strong>
+                <div style="color: #666;">{{ booking.special_requests }}</div>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div style="text-align: center; margin: 2rem 0;">
+        <a href="{% url 'my_hotel_bookings' %}" class="btn" style="margin: 0 0.5rem;">View All Bookings</a>
+        <a href="{% url 'hotel_search' %}" class="btn btn-secondary" style="margin: 0 0.5rem;">Book Another Hotel</a>
+    </div>
+    
+    <div style="background: #e8f4fd; padding: 1.5rem; border-radius: 10px; text-align: center; color: #1976d2;">
+        <strong>📧 Confirmation email sent to {{ booking.contact_email }}</strong>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Please present this booking ID at check-in</p>
+    </div>
+</div>
+{% endblock %}

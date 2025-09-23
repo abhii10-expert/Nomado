@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment Dashboard - Nomado{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="container-fluid">
+        <h1>Payment Dashboard</h1>
+        <p>Manage your payment methods and view transaction history</p>
+    </div>
+</div>
+
+<div class="container dashboard-container">
+    <!-- Quick Stats -->
+    <div class="stats-grid">
+        <div class="stat-card success">
+            <div class="stat-number">{{ recent_transactions.count }}</div>
+            <h5>Total Transactions</h5>
+            <small>Lifetime payments</small>
+        </div>
+        
+        <div class="stat-card primary">
+            <div class="stat-number">{{ payment_methods.count }}</div>
+            <h5>Saved Payment Methods</h5>
+            <small>Quick payment options</small>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-number">
+                {% for transaction in recent_transactions %}
+                    {% if transaction.status == 'SUCCESS' %}{{ transaction.amount }}{% endif %}
+                {% empty %}0{% endfor %}
+            </div>
+            <h5>Last Transaction</h5>
+            <small>Most recent payment</small>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-number">{% now "M" %}</div>
+            <h5>Active Month</h5>
+            <small>Current billing period</small>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- Saved Payment Methods -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Saved Payment Methods</h3>
+                <button onclick="showAddMethodModal()" class="btn btn-secondary">Add New</button>
+            </div>
+            
+            {% if payment_methods %}
+                <div class="methods-list">
+                    {% for method in payment_methods %}
+                    <div class="method-item">
+                        <div class="method-info">
+                            <div class="method-icon">
+                                {% if method.payment_type == 'CREDIT_CARD' or method.payment_type == 'DEBIT_CARD' %}
+                                    💳
+                                {% elif method.payment_type == 'UPI' %}
+                                    📱
+                                {% elif method.payment_type == 'NET_BANKING' %}
+                                    🏛️
+                                {% else %}
+                                    👛
+                                {% endif %}
+                            </div>
+                            <div class="method-details">
+                                <div class="method-type">{{ method.get_payment_type_display }}</div>
+                                <div class="method-data">
+                                    {% if method.payment_type == 'CREDIT_CARD' or method.payment_type == 'DEBIT_CARD' %}
+                                        **** {{ method.card_number }}
+                                    {% elif method.payment_type == 'UPI' %}
+                                        {{ method.upi_id }}
+                                    {% elif method.payment_type == 'NET_BANKING' %}
+                                        {{ method.bank_name }}
+                                    {% elif method.payment_type == 'WALLET' %}
+                                        {{ method.wallet_provider }}
+                                    {% endif %}
+                                </div>
+                                {% if method.is_default %}
+                                    <span class="primary-badge">Primary</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="method-actions">
+                            {% if not method.is_default %}
+                                <button class="btn btn-sm btn-secondary make-primary-btn" data-method-id="{{ method.id }}">
+                                    Make Primary
+                                </button>
+                            {% endif %}
+                            <button class="btn btn-sm btn-danger delete-method-btn" data-method-id="{{ method.id }}">
+                                Remove
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">💳</div>
+                    <h4>No Payment Methods</h4>
+                    <p>Add your first payment method for faster checkout</p>
+                    <button onclick="showAddMethodModal()" class="btn">Add Payment Method</button>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Transactions -->
+        <div class="card">
+            <div class="card-header">
+                <h3>Recent Transactions</h3>
+                <a href="{% url 'transaction_history' %}" class="btn btn-secondary">View All</a>
+            </div>
+            
+            {% if recent_transactions %}
+                <div class="transactions-list">
+                    {% for transaction in recent_transactions %}
+                    <div class="transaction-item">
+                        <div class="transaction-info">
+                            <div class="transaction-icon">
+                                {% if transaction.transaction_type == 'HOTEL_BOOKING' %}
+                                    🏨
+                                {% else %}
+                                    🚌
+                                {% endif %}
+                            </div>
+                            <div class="transaction-details">
+                                <div class="transaction-type">{{ transaction.get_transaction_type_display }}</div>
+                                <div class="transaction-date">{{ transaction.initiated_at|date:"M d, Y H:i" }}</div>
+                            </div>
+                        </div>
+                        <div class="transaction-amount">
+                            <div class="amount">₹{{ transaction.amount }}</div>
+                            <div class="status status-{{ transaction.status|lower }}">
+                                {{ transaction.get_status_display }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">📊</div>
+                    <h4>No Transactions</h4>
+                    <p>Your payment history will appear here</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Payment Method Modal -->
+<div id="addMethodModal" class="modal-overlay">
+    <div class="modal-content">
+        <h4>Add Payment Method</h4>
+        <form id="addMethodForm">
+            <div class="form-group">
+                <label>Payment Type</label>
+                <select id="methodType" class="form-control" required>
+                    <option value="">Select payment method</option>
+                    <option value="CREDIT_CARD">Credit Card</option>
+                    <option value="DEBIT_CARD">Debit Card</option>
+                    <option value="UPI">UPI</option>
+                    <option value="NET_BANKING">Net Banking</option>
+                    <option value="WALLET">Digital Wallet</option>
+                </select>
+            </div>
+            
+            <div id="dynamicFields"></div>
+            
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="makeDefault"> Make this my primary payment method
+                </label>
+            </div>
+            
+            <div class="modal-actions">
+                <button type="submit" class="btn">Add Payment Method</button>
+                <button type="button" onclick="hideAddMethodModal()" class="btn btn-secondary">Cancel</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+.dashboard-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    text-align: center;
+    padding: 2rem;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.stat-card.success { border-left: 4px solid #28a745; }
+.stat-card.primary { border-left: 4px solid #007bff; }
+.stat-card.warning { border-left: 4px solid #ffc107; }
+.stat-card.danger { border-left: 4px solid #dc3545; }
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card.success .stat-number { color: #28a745; }
+.stat-card.primary .stat-number { color: #007bff; }
+.stat-card.warning .stat-number { color: #ffc107; }
+.stat-card.danger .stat-number { color: #dc3545; }
+
+.main-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+}
+
+.card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    padding: 2rem;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.card-header h3 {
+    color: #667eea;
+    margin: 0;
+}
+
+.methods-list, .transactions-list {
+    display: grid;
+    gap: 1rem;
+}
+
+.method-item, .transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.method-info, .transaction-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.method-icon, .transaction-icon {
+    font-size: 1.5rem;
+}
+
+.method-type, .transaction-type {
+    font-weight: bold;
+}
+
+.method-data, .transaction-date {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.primary-badge {
+    background: #28a745;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+}
+
+.method-actions, .transaction-amount {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.transaction-amount {
+    text-align: right;
+    flex-direction: column;
+}
+
+.amount {
+    font-weight: bold;
+}
+
+.status {
+    font-size: 0.8rem;
+}
+
+.status-success { color: #28a745; }
+.status-failed { color: #dc3545; }
+.status-pending { color: #ffc107; }
+
+.empty-state {
+    text-align: center;
+    color: #666;
+    padding: 2rem;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    background: #667eea;
+    color: white;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+}
+
+.btn:hover {
+    background: #5a6fd8;
+}
+
+.btn-secondary {
+    background: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #545b62;
+}
+
+.btn-danger {
+    background: #dc3545;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+.btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
+}
+
+.modal-actions .btn {
+    flex: 1;
+}
+</style>
+
+<script src="{% static 'js/payment_dashboard.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ hotel.name }} - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <a href="{% url 'hotel_search' %}" style="color: #667eea; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem;">
+        ← Back to Search
+    </a>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <div>
+        <h1 style="color: #333; margin-bottom: 1rem;">{{ hotel.name }}</h1>
+        <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-weight: bold; color: #667eea; font-size: 1.5rem;">{{ hotel.overall_rating|floatformat:1 }}</span>
+                <div style="color: #ffa500; font-size: 1.2rem;">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= hotel.overall_rating %}⭐{% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% if hotel.featured %}
+                <span style="background: #ff6b6b; color: white; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; font-weight: bold;">
+                    ⭐ Featured Hotel
+                </span>
+            {% endif %}
+        </div>
+        
+        <p style="color: #666; font-size: 1.1rem; margin-bottom: 2rem;">📍 {{ hotel.address }}, {{ hotel.city }}, {{ hotel.state }}, {{ hotel.country }}</p>
+        
+        <!-- Hotel Images -->
+        <div style="margin-bottom: 2rem;">
+            {% if hotel.images.all %}
+                <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 0.5rem; height: 300px;">
+                    <div style="grid-row: span 2;">
+                        <img src="{{ hotel.images.first.image.url }}" alt="{{ hotel.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 10px;">
+                    </div>
+                    {% for image in hotel.images.all|slice:"1:5" %}
+                        <div>
+                            <img src="{{ image.image.url }}" alt="{{ hotel.name }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 8px;">
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="width: 100%; height: 300px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                    🏨
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Rating Breakdown -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">Quality Ratings</h3>
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 2rem;">
+                <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2.5rem; font-weight: bold; color: #667eea; margin-bottom: 0.5rem;">{{ hotel.cleanliness_rating|floatformat:1 }}</div>
+                    <div style="color: #ffa500; margin-bottom: 0.5rem;">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= hotel.cleanliness_rating %}⭐{% endif %}
+                        {% endfor %}
+                    </div>
+                    <div style="font-weight: 500; color: #333;">Cleanliness</div>
+                    <small style="color: #666;">Hygiene & Maintenance</small>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2.5rem; font-weight: bold; color: #667eea; margin-bottom: 0.5rem;">{{ hotel.comfort_rating|floatformat:1 }}</div>
+                    <div style="color: #ffa500; margin-bottom: 0.5rem;">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= hotel.comfort_rating %}⭐{% endif %}
+                        {% endfor %}
+                    </div>
+                    <div style="font-weight: 500; color: #333;">Comfort</div>
+                    <small style="color: #666;">Room Quality & Amenities</small>
+                </div>
+                
+                <div style="text-align: center; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                    <div style="font-size: 2.5rem; font-weight: bold; color: #667eea; margin-bottom: 0.5rem;">{{ hotel.safety_rating|floatformat:1 }}</div>
+                    <div style="color: #ffa500; margin-bottom: 0.5rem;">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= hotel.safety_rating %}⭐{% endif %}
+                        {% endfor %}
+                    </div>
+                    <div style="font-weight: 500; color: #333;">Safety</div>
+                    <small style="color: #666;">Security & Location</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">About This Hotel</h3>
+            <p style="line-height: 1.6; color: #666;">{{ hotel.description }}</p>
+        </div>
+        
+        <!-- Amenities -->
+        <div class="card">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">Amenities & Services</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                {% if hotel.wifi %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">📶</span>
+                        <span style="color: #1976d2; font-weight: 500;">Free WiFi</span>
+                    </div>
+                {% endif %}
+                {% if hotel.parking %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">🚗</span>
+                        <span style="color: #1976d2; font-weight: 500;">Free Parking</span>
+                    </div>
+                {% endif %}
+                {% if hotel.restaurant %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">🍽️</span>
+                        <span style="color: #1976d2; font-weight: 500;">Restaurant</span>
+                    </div>
+                {% endif %}
+                {% if hotel.pool %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">🏊</span>
+                        <span style="color: #1976d2; font-weight: 500;">Swimming Pool</span>
+                    </div>
+                {% endif %}
+                {% if hotel.gym %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">💪</span>
+                        <span style="color: #1976d2; font-weight: 500;">Fitness Center</span>
+                    </div>
+                {% endif %}
+                {% if hotel.spa %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">💆</span>
+                        <span style="color: #1976d2; font-weight: 500;">Spa Services</span>
+                    </div>
+                {% endif %}
+                {% if hotel.room_service %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">🛎️</span>
+                        <span style="color: #1976d2; font-weight: 500;">Room Service</span>
+                    </div>
+                {% endif %}
+                {% if hotel.air_conditioning %}
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; background: #e8f4fd; border-radius: 8px;">
+                        <span style="color: #1976d2;">❄️</span>
+                        <span style="color: #1976d2; font-weight: 500;">Air Conditioning</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Booking Panel -->
+    <div>
+        <div class="card" style="position: sticky; top: 2rem;">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <div style="font-size: 2.5rem; font-weight: bold; color: #333; margin-bottom: 0.5rem;">
+                    ₹{{ hotel.price_per_night|floatformat:0 }}
+                </div>
+                <small style="color: #666;">per night</small>
+            </div>
+            
+            {% if check_in_date and check_out_date %}
+                <div style="background: #f8f9fa; padding: 1rem; border-radius: 10px; margin-bottom: 1rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <small style="color: #666; font-weight: 500;">CHECK-IN</small>
+                            <div style="font-weight: bold;">{{ check_in_date }}</div>
+                        </div>
+                        <div>
+                            <small style="color: #666; font-weight: 500;">CHECK-OUT</small>
+                            <div style="font-weight: bold;">{{ check_out_date }}</div>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        <div>
+                            <small style="color: #666; font-weight: 500;">GUESTS</small>
+                            <div style="font-weight: bold;">{{ guests }} Guest{{ guests|pluralize }}</div>
+                        </div>
+                        <div>
+                            <small style="color: #666; font-weight: 500;">ROOMS</small>
+                            <div style="font-weight: bold;">{{ rooms }} Room{{ rooms|pluralize }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                {% if user.is_authenticated %}
+                    <!-- FIXED: Use check_in_date and check_out_date parameters -->
+                    <a href="{% url 'hotel_booking' hotel.id %}?check_in_date={{ check_in_date }}&check_out_date={{ check_out_date }}&guests={{ guests }}&rooms={{ rooms }}" class="btn" style="text-align: center; padding: 15px; font-size: 1.1rem;">
+                        Book This Hotel
+                    </a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'hotel_booking' hotel.id %}?check_in_date={{ check_in_date }}&check_out_date={{ check_out_date }}&guests={{ guests }}&rooms={{ rooms }}" class="btn" style="text-align: center; padding: 15px; font-size: 1.1rem;">
+                        Login to Book
+                    </a>
+                {% endif %}
+                
+                <button onclick="history.back()" class="btn btn-secondary" style="text-align: center; padding: 15px;">
+                    Back to Search
+                </button>
+            </div>
+            
+            <!-- Contact Information -->
+            <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee;">
+                <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Hotel</h4>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>📞</span>
+                        <a href="tel:{{ hotel.phone }}" style="color: #667eea; text-decoration: none;">{{ hotel.phone }}</a>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span>✉️</span>
+                        <a href="mailto:{{ hotel.email }}" style="color: #667eea; text-decoration: none;">{{ hotel.email }}</a>
+                    </div>
+                    {% if hotel.website %}
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span>🌐</span>
+                            <a href="{{ hotel.website }}" target="_blank" style="color: #667eea; text-decoration: none;">Visit Website</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

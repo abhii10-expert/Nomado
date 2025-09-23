@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Cancel Booking - Nomado{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 2rem auto;">
+    <h2 style="color: #e74c3c; margin-bottom: 2rem; text-align: center;">Cancel Booking</h2>
+    
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+        <h3>Are you sure you want to cancel this booking?</h3>
+        <p style="color: #666;">Booking ID: <strong>{{ booking.booking_id }}</strong></p>
+        <p style="color: #666;">{{ booking.route.route_number }} - {{ booking.travel_date|date:"M d, Y" }}</p>
+    </div>
+    
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: flex; gap: 1rem; justify-content: center;">
+            <button type="submit" class="btn" style="background: #e74c3c;">Yes, Cancel Booking</button>
+            <a href="{% url 'my_transport_bookings' %}" class="btn btn-secondary">No, Keep Booking</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

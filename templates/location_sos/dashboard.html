@@ -1,0 +1,395 @@
+{% extends 'base.html' %}
+
+{% block title %}Safety Dashboard - Nomado{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white; padding: 2rem 0; margin-bottom: 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">🚨 Safety Dashboard</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Your safety is our priority. Manage emergency contacts, share location, and access SOS features.</p>
+    </div>
+</div>
+
+<!-- Emergency Actions -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%); color: white;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">🚨</div>
+        <h3 style="margin-bottom: 1rem;">Emergency SOS</h3>
+        <p style="margin-bottom: 1.5rem; opacity: 0.9;">Instantly alert your emergency contacts</p>
+        <button onclick="triggerSOS()" class="btn" style="background: white; color: #e74c3c; border: 2px solid white;">
+            Send SOS Alert
+        </button>
+    </div>
+    
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); color: white;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">📍</div>
+        <h3 style="margin-bottom: 1rem;">Share Location</h3>
+        <p style="margin-bottom: 1.5rem; opacity: 0.9;">Share your live location with contacts</p>
+        <button onclick="shareLocation()" class="btn" style="background: white; color: #3498db; border: 2px solid white;">
+            Share Location
+        </button>
+    </div>
+    
+    <div class="card" style="text-align: center; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white;">
+        <div style="font-size: 3rem; margin-bottom: 1rem;">✅</div>
+        <h3 style="margin-bottom: 1rem;">Safety Check-in</h3>
+        <p style="margin-bottom: 1.5rem; opacity: 0.9;">Let others know you're safe</p>
+        <button onclick="safetyCheckin()" class="btn" style="background: white; color: #27ae60; border: 2px solid white;">
+            Check In Safe
+        </button>
+    </div>
+    
+    <div class="card" style="text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 1rem; color: #667eea;">👥</div>
+        <h3 style="color: #667eea; margin-bottom: 1rem;">Emergency Contacts</h3>
+        <p style="margin-bottom: 1.5rem; color: #666;">Manage your emergency contacts</p>
+        <a href="{% url 'emergency_contacts' %}" class="btn">
+            Manage Contacts
+        </a>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
+    <div class="card" style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2rem; font-weight: bold; color: #667eea;">{{ emergency_contacts.count }}</div>
+        <div style="color: #666;">Emergency Contacts</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2rem; font-weight: bold; color: #27ae60;">{{ active_shares.count }}</div>
+        <div style="color: #666;">Active Location Shares</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">{{ recent_alerts.count }}</div>
+        <div style="color: #666;">Recent SOS Alerts</div>
+    </div>
+    <div class="card" style="text-align: center; padding: 1.5rem;">
+        <div style="font-size: 2rem; font-weight: bold; color: #3498db;">{{ recent_checkins.count }}</div>
+        <div style="color: #666;">Safety Check-ins</div>
+    </div>
+</div>
+
+<!-- Active Location Shares -->
+{% if active_shares %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Active Location Shares</h3>
+    <div style="display: grid; gap: 1rem;">
+        {% for share in active_shares %}
+        <div style="padding: 1rem; background: #f8f9fa; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <strong>Shared on {{ share.created_at|date:"M d, Y H:i" }}</strong>
+                <div style="color: #666; font-size: 0.9rem;">Expires: {{ share.expires_at|date:"M d, Y H:i" }}</div>
+                {% if share.message %}
+                <div style="color: #666; font-size: 0.9rem;">Message: {{ share.message }}</div>
+                {% endif %}
+            </div>
+            <div>
+                <a href="{% url 'view_shared_location' share.share_id %}" class="btn btn-secondary" target="_blank">View</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recent Activity -->
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Recent SOS Alerts -->
+    <div class="card">
+        <h3 style="color: #e74c3c; margin-bottom: 1.5rem;">Recent SOS Alerts</h3>
+        {% if recent_alerts %}
+            {% for alert in recent_alerts %}
+            <div style="padding: 1rem; border-left: 4px solid #e74c3c; background: #fdf2f2; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <strong style="color: #e74c3c;">{{ alert.get_alert_type_display }}</strong>
+                        <div style="color: #666; font-size: 0.9rem;">{{ alert.created_at|date:"M d, Y H:i" }}</div>
+                        {% if alert.message %}
+                        <div style="color: #666; margin-top: 0.5rem;">{{ alert.message|truncatewords:10 }}</div>
+                        {% endif %}
+                    </div>
+                    <span class="status-badge status-{{ alert.status|lower }}">
+                        {{ alert.get_status_display }}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 2rem;">No SOS alerts sent</p>
+        {% endif %}
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="{% url 'sos_alerts' %}" class="btn btn-secondary">View All Alerts</a>
+        </div>
+    </div>
+    
+    <!-- Recent Check-ins -->
+    <div class="card">
+        <h3 style="color: #27ae60; margin-bottom: 1.5rem;">Recent Safety Check-ins</h3>
+        {% if recent_checkins %}
+            {% for checkin in recent_checkins %}
+            <div style="padding: 1rem; border-left: 4px solid #27ae60; background: #f2f8f2; margin-bottom: 1rem; border-radius: 0 8px 8px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: start;">
+                    <div>
+                        <strong style="color: #27ae60;">{{ checkin.get_status_display }}</strong>
+                        <div style="color: #666; font-size: 0.9rem;">{{ checkin.created_at|date:"M d, Y H:i" }}</div>
+                        {% if checkin.message %}
+                        <div style="color: #666; margin-top: 0.5rem;">{{ checkin.message|truncatewords:10 }}</div>
+                        {% endif %}
+                    </div>
+                    <span style="font-size: 1.5rem;">
+                        {% if checkin.status == 'SAFE' %}✅
+                        {% elif checkin.status == 'CONCERN' %}⚠️
+                        {% else %}🚨{% endif %}
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="color: #666; text-align: center; padding: 2rem;">No check-ins recorded</p>
+        {% endif %}
+        <div style="text-align: center; margin-top: 1rem;">
+            <a href="{% url 'safety_checkin' %}" class="btn btn-secondary">New Check-in</a>
+        </div>
+    </div>
+</div>
+
+<!-- Emergency Numbers -->
+<div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">🚨 Emergency Numbers (India)</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">112</div>
+            <div style="color: #666;">Emergency Services</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">100</div>
+            <div style="color: #666;">Police</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">108</div>
+            <div style="color: #666;">Ambulance</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">101</div>
+            <div style="color: #666;">Fire Brigade</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">1098</div>
+            <div style="color: #666;">Child Helpline</div>
+        </div>
+        <div style="text-align: center; padding: 1rem;">
+            <div style="font-size: 2rem; font-weight: bold; color: #e74c3c;">181</div>
+            <div style="color: #666;">Women Helpline</div>
+        </div>
+    </div>
+</div>
+
+
+<style>
+    .status-badge {
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-transform: uppercase;
+    }
+    
+    .status-active {
+        background-color: #e74c3c;
+    }
+    
+    .status-resolved {
+        background-color: #27ae60;
+    }
+    
+    .status-acknowledged {
+        background-color: #3498db;
+    }
+    
+    .status-false_alarm {
+        background-color: #95a5a6;
+    }
+</style>
+
+<script>
+let userLocation = null;
+
+// Get user location on page load
+if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            userLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+        },
+        function(error) {
+            console.error("Location access denied:", error);
+        }
+    );
+}
+
+function triggerSOS() {
+    if (!userLocation) {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    userLocation = {
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    };
+                    sendSOSAlert();
+                },
+                function(error) {
+                    alert("Location access is required for SOS alerts. Please enable location and try again.");
+                }
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    } else {
+        sendSOSAlert();
+    }
+}
+
+function sendSOSAlert() {
+    if (confirm("This will send an emergency SOS alert to all your emergency contacts. Continue?")) {
+        const alertType = prompt("Emergency type:\n1. General Emergency\n2. Medical Emergency\n3. Security Threat\n4. Accident\n5. Lost/Stranded\n\nEnter number (1-5):");
+        
+        const alertTypes = {
+            '1': 'EMERGENCY',
+            '2': 'MEDICAL',
+            '3': 'SECURITY',
+            '4': 'ACCIDENT',
+            '5': 'LOST'
+        };
+        
+        const selectedType = alertTypes[alertType] || 'EMERGENCY';
+        const message = prompt("Optional: Describe the emergency situation:");
+        
+        // Get address from coordinates
+        fetch(`https://api.opencagedata.com/geocode/v1/json?q=${userLocation.latitude}+${userLocation.longitude}&key=YOUR_API_KEY`)
+            .then(response => response.json())
+            .then(data => {
+                const address = data.results[0]?.formatted || 'Address not found';
+                
+                fetch('{% url "trigger_sos_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        latitude: userLocation.latitude,
+                        longitude: userLocation.longitude,
+                        address: address,
+                        alert_type: selectedType,
+                        message: message || ''
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("SOS alert sent successfully! Your emergency contacts have been notified.");
+                        location.reload();
+                    } else {
+                        alert("Error sending SOS alert: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert("Error sending SOS alert. Please try again.");
+                    console.error('Error:', error);
+                });
+            })
+            .catch(error => {
+                // Send without address if geocoding fails
+                fetch('{% url "trigger_sos_ajax" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        latitude: userLocation.latitude,
+                        longitude: userLocation.longitude,
+                        address: '',
+                        alert_type: selectedType,
+                        message: message || ''
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("SOS alert sent successfully!");
+                        location.reload();
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                });
+            });
+    }
+}
+
+function shareLocation() {
+    if (!userLocation) {
+        alert("Please allow location access first.");
+        return;
+    }
+    window.location.href = '{% url "share_location" %}';
+}
+
+function safetyCheckin() {
+    if (!userLocation) {
+        alert("Please allow location access first.");
+        return;
+    }
+    
+    const status = prompt("Safety Status:\n1. Safe\n2. Concern\n3. Emergency\n\nEnter number (1-3):");
+    const statusMap = {'1': 'SAFE', '2': 'CONCERN', '3': 'EMERGENCY'};
+    const selectedStatus = statusMap[status] || 'SAFE';
+    
+    const message = prompt("Optional message:");
+    
+    fetch('{% url "safety_checkin_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            address: '',
+            status: selectedStatus,
+            message: message || ''
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert("Safety check-in recorded successfully!");
+            location.reload();
+        } else {
+            alert("Error: " + data.message);
+        }
+    });
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+{% endblock %}

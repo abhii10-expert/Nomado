@@ -1,0 +1,105 @@
+{% extends 'base.html' %}
+
+{% block title %}Booking Confirmed - Nomado{% endblock %}
+
+{% block content %}
+<div style="text-align: center; margin: 2rem 0;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">✅</div>
+    <h1 style="color: #27ae60; margin-bottom: 1rem;">Booking Confirmed!</h1>
+    <p style="color: #666; font-size: 1.1rem;">Your {{ booking.route.get_transport_type_display|lower }} booking has been successfully confirmed</p>
+</div>
+
+<div style="max-width: 600px; margin: 0 auto;">
+    <div class="card" style="text-align: center; padding: 2rem; background: linear-gradient(135deg, #27ae60 0%, #229954 100%); color: white; margin-bottom: 2rem;">
+        <h2 style="margin-bottom: 1rem;">Booking ID: {{ booking.booking_id }}</h2>
+        <p style="opacity: 0.9; font-size: 1.1rem;">Save this booking ID for future reference</p>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Journey Details</h3>
+        
+        <div style="text-align: center; margin-bottom: 2rem;">
+            {% if booking.route.transport_type == 'FLIGHT' %}
+                <span style="font-size: 3rem;">✈️</span>
+            {% elif booking.route.transport_type == 'TRAIN' %}
+                <span style="font-size: 3rem;">🚄</span>
+            {% else %}
+                <span style="font-size: 3rem;">🚌</span>
+            {% endif %}
+            <div style="font-weight: bold; color: #333; margin-top: 0.5rem; font-size: 1.2rem;">{{ booking.route.route_number }}</div>
+            <div style="color: #667eea; font-weight: 600;">{{ booking.route.operator_name }}</div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 2rem; padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ booking.route.departure_time|time:"H:i" }}</div>
+                <div style="color: #667eea; font-weight: 600;">{{ booking.route.source_city }}</div>
+                <div style="color: #666; font-size: 0.9rem;">{{ booking.route.source_station }}</div>
+            </div>
+            <div style="text-align: center; color: #667eea;">
+                <div style="font-size: 1.2rem;">→</div>
+                <div style="font-weight: 600;">{{ booking.route.duration_display }}</div>
+            </div>
+            <div style="text-align: center; flex: 1;">
+                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ booking.route.arrival_time|time:"H:i" }}</div>
+                <div style="color: #667eea; font-weight: 600;">{{ booking.route.destination_city }}</div>
+                <div style="color: #666; font-size: 0.9rem;">{{ booking.route.destination_station }}</div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+            <div style="text-align: center;">
+                <strong>Travel Date</strong>
+                <div style="font-size: 1.2rem; color: #667eea;">{{ booking.travel_date|date:"M d, Y" }}</div>
+            </div>
+            <div style="text-align: center;">
+                <strong>Passengers</strong>
+                <div style="font-size: 1.2rem; color: #667eea;">{{ booking.passengers }}</div>
+            </div>
+            <div style="text-align: center;">
+                <strong>Class</strong>
+                <div style="font-size: 1.2rem; color: #667eea;">{{ booking.get_class_type_display }}</div>
+            </div>
+        </div>
+        
+        <div style="border-top: 2px solid #667eea; padding-top: 1rem; text-align: center;">
+            <strong style="font-size: 1.3rem; color: #333;">Total Amount Paid: ₹{{ booking.total_amount|floatformat:0 }}</strong>
+        </div>
+    </div>
+    
+    <div class="card" style="margin-top: 1rem;">
+        <h4 style="color: #667eea; margin-bottom: 1rem;">Passenger Details</h4>
+        {% for passenger in passengers %}
+            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                <strong>{{ passenger.name }}</strong>
+                <span style="color: #666;">Age: {{ passenger.age }}, Gender: {{ passenger.gender }}</span>
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="card" style="margin-top: 1rem;">
+        <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Information</h4>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div>
+                <strong>Name:</strong> {{ booking.contact_name }}
+            </div>
+            <div>
+                <strong>Phone:</strong> {{ booking.contact_phone }}
+            </div>
+        </div>
+        <div style="margin-top: 0.5rem;">
+            <strong>Email:</strong> {{ booking.contact_email }}
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin: 2rem 0;">
+        <a href="{% url 'my_transport_bookings' %}" class="btn" style="margin: 0 0.5rem;">View All Bookings</a>
+        <a href="{% url 'transport_search' %}" class="btn btn-secondary" style="margin: 0 0.5rem;">Book Another Trip</a>
+    </div>
+    
+    <div style="background: #e8f4fd; padding: 1.5rem; border-radius: 10px; text-align: center; color: #1976d2;">
+        <strong>📧 Confirmation email sent to {{ booking.contact_email }}</strong>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem;">Please carry this booking ID and a valid ID during travel</p>
+    </div>
+</div>
+{% endblock %}

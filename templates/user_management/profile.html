@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}Nomado - Your Travel Companion{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-title">Welcome to Nomado</div>
+    <div class="hero-subtitle">Your ultimate travel companion for hotels, transport, and safety</div>
+    <div style="margin-top: 2rem;">
+        {% if user.is_authenticated %}
+            <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="margin: 0 1rem;">My Dashboard</a>
+            <a href="{% url 'hotel_search' %}" class="btn" style="margin: 0 1rem;">Find Hotels</a>
+        {% else %}
+            <a href="{% url 'register' %}" class="btn btn-secondary" style="margin: 0 1rem;">Get Started</a>
+            <a href="{% url 'login' %}" class="btn" style="margin: 0 1rem;">Login</a>
+        {% endif %}
+    </div>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 3rem;">
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">🏨 Hotel Booking</h3>
+        <p style="margin-bottom: 1.5rem;">Find and book the best hotels based on cleanliness, comfort, and safety ratings. Compare prices and amenities to make the perfect choice.</p>
+        <a href="{% url 'hotel_search' %}" class="btn">Search Hotels</a>
+    </div>
+
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">🚗 Transportation</h3>
+        <p style="margin-bottom: 1.5rem;">Plan your journey with trains, flights, and buses. Get route suggestions and book tickets for efficient travel paths.</p>
+        <a href="{% url 'transport_search' %}" class="btn">Book Transport</a>
+    </div>
+
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">📍 Safety Features</h3>
+        <p style="margin-bottom: 1.5rem;">Share your location with loved ones and access emergency SOS alerts for added safety during your travels.</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'location_share' %}" class="btn">Share Location</a>
+        {% else %}
+            <a href="{% url 'login' %}" class="btn">Login to Access</a>
+        {% endif %}
+    </div>
+</div>
+
+{% if user.is_authenticated %}
+<div class="card" style="margin-top: 2rem; text-align: center;">
+    <h3 style="color: #667eea; margin-bottom: 1rem;">Welcome back, {{ user.first_name|default:user.username }}!</h3>
+    <p>Ready to plan your next adventure?</p>
+    <div style="margin-top: 1rem;">
+        <a href="{% url 'profile' %}" class="btn" style="margin: 0 0.5rem;">View Profile</a>
+        <a href="#" class="btn btn-secondary" style="margin: 0 0.5rem;">My Bookings</a>
+    </div>
+</div>
+{% else %}
+<div class="card" style="margin-top: 2rem; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+    <h3 style="margin-bottom: 1rem;">Join Nomado Today</h3>
+    <p style="margin-bottom: 1.5rem;">Create an account to access all features including hotel booking, transport planning, and safety tools.</p>
+    <div>
+        <a href="{% url 'register' %}" class="btn btn-secondary" style="margin: 0 0.5rem;">Sign Up Free</a>
+        <a href="{% url 'login' %}" class="btn" style="margin: 0 0.5rem; background: rgba(255,255,255,0.2);">Already have an account?</a>
+    </div>
+</div>
+{% endif %}
+
+<div style="margin-top: 3rem; text-align: center;">
+    <h2 style="color: #667eea; margin-bottom: 2rem;">Why Choose Nomado?</h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+        <div style="padding: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⭐</div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Quality Ratings</h4>
+            <p style="color: #666;">Real ratings for cleanliness, comfort, and safety</p>
+        </div>
+        <div style="padding: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🔒</div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Secure Bookings</h4>
+            <p style="color: #666;">Safe and secure payment processing</p>
+        </div>
+        <div style="padding: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">🚨</div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Emergency Support</h4>
+            <p style="color: #666;">SOS alerts and location sharing for safety</p>
+        </div>
+        <div style="padding: 1rem;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">💰</div>
+            <h4 style="color: #333; margin-bottom: 0.5rem;">Best Prices</h4>
+            <p style="color: #666;">Compare prices across multiple providers</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

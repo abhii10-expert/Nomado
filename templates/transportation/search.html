@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+
+{% block title %}Transportation Search - Nomado{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-bottom: 2rem;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <h1 style="font-size: 2.5rem; margin-bottom: 1rem;">Book Your Journey</h1>
+        <p style="font-size: 1.2rem; opacity: 0.9;">Find and book flights, trains, and buses across India</p>
+    </div>
+</div>
+
+<div class="card" style="margin-bottom: 2rem;">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Search Transportation</h3>
+    
+    <form method="get" id="searchForm">
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 1rem; margin-bottom: 1rem;">
+            <div class="form-group">
+                <label for="source_city">From</label>
+                <input type="text" name="source_city" id="source_city" class="form-control" placeholder="Source city" value="{{ request.GET.source_city }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="destination_city">To</label>
+                <input type="text" name="destination_city" id="destination_city" class="form-control" placeholder="Destination city" value="{{ request.GET.destination_city }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="travel_date">Travel Date</label>
+                <input type="date" name="travel_date" id="travel_date" class="form-control" value="{{ request.GET.travel_date }}" min="{{ today }}">
+            </div>
+            
+            <div class="form-group">
+                <label for="passengers">Passengers</label>
+                <select name="passengers" id="passengers" class="form-control">
+                    <option value="1" {% if request.GET.passengers == "1" %}selected{% endif %}>1 Passenger</option>
+                    <option value="2" {% if request.GET.passengers == "2" %}selected{% endif %}>2 Passengers</option>
+                    <option value="3" {% if request.GET.passengers == "3" %}selected{% endif %}>3 Passengers</option>
+                    <option value="4" {% if request.GET.passengers == "4" %}selected{% endif %}>4 Passengers</option>
+                    <option value="5" {% if request.GET.passengers == "5" %}selected{% endif %}>5+ Passengers</option>
+                </select>
+            </div>
+            
+            <div class="form-group" style="display: flex; align-items: end;">
+                <button type="submit" class="btn" style="padding: 12px 24px; white-space: nowrap;">
+                    🔍 Search
+                </button>
+            </div>
+        </div>
+        
+        <!-- Advanced Filters -->
+        <div style="border-top: 1px solid #eee; padding-top: 1rem; margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Filters</h4>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                <div class="form-group">
+                    <label for="transport_type">Transport Type</label>
+                    <select name="transport_type" id="transport_type" class="form-control">
+                        <option value="">All Types</option>
+                        <option value="FLIGHT" {% if request.GET.transport_type == "FLIGHT" %}selected{% endif %}>✈️ Flights</option>
+                        <option value="TRAIN" {% if request.GET.transport_type == "TRAIN" %}selected{% endif %}>🚄 Trains</option>
+                        <option value="BUS" {% if request.GET.transport_type == "BUS" %}selected{% endif %}>🚌 Buses</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="budget">Budget per person</label>
+                    <select name="budget" id="budget" class="form-control">
+                        <option value="">Any Budget</option>
+                        <option value="0-1000" {% if request.GET.budget == "0-1000" %}selected{% endif %}>Under ₹1,000</option>
+                        <option value="1000-3000" {% if request.GET.budget == "1000-3000" %}selected{% endif %}>₹1,000 - ₹3,000</option>
+                        <option value="3000-8000" {% if request.GET.budget == "3000-8000" %}selected{% endif %}>₹3,000 - ₹8,000</option>
+                        <option value="8000-999999" {% if request.GET.budget == "8000-999999" %}selected{% endif %}>Above ₹8,000</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="departure_time">Departure Time</label>
+                    <select name="departure_time" id="departure_time" class="form-control">
+                        <option value="">Any Time</option>
+                        <option value="00:00-06:00" {% if request.GET.departure_time == "00:00-06:00" %}selected{% endif %}>Early Morning (12-6 AM)</option>
+                        <option value="12:00-18:00" {% if request.GET.departure_time == "12:00-18:00" %}selected{% endif %}>Afternoon (12-6 PM)</option>
+                        <option value="18:00-23:59" {% if request.GET.departure_time == "18:00-23:59" %}selected{% endif %}>Evening (6 PM-12 AM)</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="display: flex; flex-wrap: wrap; gap: 1rem; align-items: end;">
+                    <label style="width: 100%; margin-bottom: 0.5rem;">Amenities</label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="ac_required" {% if request.GET.ac_required %}checked{% endif %}> AC
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="wifi_required" {% if request.GET.wifi_required %}checked{% endif %}> WiFi
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: normal;">
+                        <input type="checkbox" name="food_service" {% if request.GET.food_service %}checked{% endif %}> Food
+                    </label>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+{% if search_performed %}
+    <div style="margin-bottom: 2rem;">
+        <h3 style="color: #667eea;">Search Results</h3>
+        <p style="color: #666;">{{ total_results }} route{{ total_results|pluralize }} found</p>
+    </div>
+    
+    {% if routes %}
+        <div style="display: grid; gap: 1.5rem;">
+            {% for route in routes %}
+                <div class="card" style="display: grid; grid-template-columns: auto 1fr auto; gap: 2rem; align-items: center; padding: 1.5rem;">
+                    <!-- Transport Icon and Type -->
+                    <div style="text-align: center; min-width: 80px;">
+                        {% if route.transport_type == 'FLIGHT' %}
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✈️</div>
+                            <div style="font-size: 0.9rem; color: #667eea; font-weight: 500;">Flight</div>
+                        {% elif route.transport_type == 'TRAIN' %}
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚄</div>
+                            <div style="font-size: 0.9rem; color: #667eea; font-weight: 500;">Train</div>
+                        {% else %}
+                            <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🚌</div>
+                            <div style="font-size: 0.9rem; color: #667eea; font-weight: 500;">Bus</div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Route Details -->
+                    <div>
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 1rem;">
+                            <div>
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ route.departure_time|time:"H:i" }}</div>
+                                <div style="color: #666;">{{ route.source_city }}</div>
+                                <div style="font-size: 0.8rem; color: #999;">{{ route.source_station }}</div>
+                            </div>
+                            
+                            <div style="flex: 1; text-align: center; position: relative;">
+                                <div style="height: 2px; background: #ddd; margin: 1rem 0;"></div>
+                                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 0 1rem; color: #667eea; font-weight: 500;">
+                                    {{ route.duration_display }}
+                                </div>
+                            </div>
+                            
+                            <div style="text-align: right;">
+                                <div style="font-size: 1.5rem; font-weight: bold; color: #333;">{{ route.arrival_time|time:"H:i" }}</div>
+                                <div style="color: #666;">{{ route.destination_city }}</div>
+                                <div style="font-size: 0.8rem; color: #999;">{{ route.destination_station }}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="display: flex; align-items: center; gap: 2rem; margin-bottom: 1rem;">
+                            <div>
+                                <strong style="color: #333;">{{ route.operator_name }}</strong>
+                                <span style="color: #667eea; margin-left: 1rem;">{{ route.route_number }}</span>
+                            </div>
+                            
+                            <div style="display: flex; gap: 0.5rem;">
+                                {% if route.ac_available %}
+                                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">❄️ AC</span>
+                                {% endif %}
+                                {% if route.wifi_available %}
+                                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">📶 WiFi</span>
+                                {% endif %}
+                                {% if route.food_service %}
+                                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">🍽️ Food</span>
+                                {% endif %}
+                                {% if route.sleeper_available %}
+                                    <span style="background: #e8f4fd; color: #1976d2; padding: 3px 8px; border-radius: 12px; font-size: 0.7rem;">🛏️ Sleeper</span>
+                                {% endif %}
+                            </div>
+                            
+                            <div style="margin-left: auto;">
+                                <span style="color: #666; font-size: 0.9rem;">{{ route.available_seats }} seats available</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Pricing and Booking -->
+                    <div style="text-align: center; min-width: 150px;">
+                        <div style="font-size: 2rem; font-weight: bold; color: #333; margin-bottom: 0.5rem;">₹{{ route.base_price|floatformat:0 }}</div>
+                        <div style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">per person</div>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <a href="{% url 'route_detail' route.id %}?travel_date={{ request.GET.travel_date }}&passengers={{ request.GET.passengers }}" class="btn btn-secondary" style="text-align: center; padding: 8px 16px; font-size: 0.9rem;">
+                                View Details
+                            </a>
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'transport_booking' route.id %}?travel_date={{ request.GET.travel_date }}&passengers={{ request.GET.passengers }}" class="btn" style="text-align: center; padding: 8px 16px; font-size: 0.9rem;">
+                                    Book Now
+                                </a>
+                            {% else %}
+                                <a href="{% url 'login' %}" class="btn" style="text-align: center; padding: 8px 16px; font-size: 0.9rem;">
+                                    Login to Book
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if routes.has_other_pages %}
+            <div style="text-align: center; margin: 3rem 0;">
+                <div style="display: inline-flex; gap: 0.5rem;">
+                    {% if routes.has_previous %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ routes.previous_page_number }}" class="btn">Previous</a>
+                    {% endif %}
+                    
+                    {% for num in routes.paginator.page_range %}
+                        {% if num == routes.number %}
+                            <span style="padding: 8px 16px; background: #667eea; color: white; border-radius: 5px;">{{ num }}</span>
+                        {% else %}
+                            <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}" style="padding: 8px 16px; color: #667eea; text-decoration: none; border: 1px solid #667eea; border-radius: 5px;">{{ num }}</a>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if routes.has_next %}
+                        <a href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ routes.next_page_number }}" class="btn">Next</a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">No Routes Found</h3>
+            <p style="color: #666; margin-bottom: 2rem;">Try adjusting your search criteria or removing some filters.</p>
+            <a href="{% url 'transport_search' %}" class="btn">Clear Filters</a>
+        </div>
+    {% endif %}
+{% else %}
+    <!-- Popular Routes Section -->
+    <div style="margin-bottom: 2rem;">
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Popular Routes</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+            <div class="card" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">✈️</div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Delhi ↔ Mumbai</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Starting from ₹4,500</p>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 1.5rem;">Multiple flights daily</p>
+                <button class="btn" onclick="fillRoute('Delhi', 'Mumbai')">Search Flights</button>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🚄</div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Mumbai ↔ Pune</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Starting from ₹200</p>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 1.5rem;">Every 30 minutes</p>
+                <button class="btn" onclick="fillRoute('Mumbai', 'Pune')">Search Trains</button>
+            </div>
+            
+            <div class="card" style="text-align: center; padding: 2rem;">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🚌</div>
+                <h4 style="color: #333; margin-bottom: 0.5rem;">Bangalore ↔ Chennai</h4>
+                <p style="color: #666; margin-bottom: 1rem;">Starting from ₹800</p>
+                <p style="color: #999; font-size: 0.9rem; margin-bottom: 1.5rem;">AC & Non-AC buses</p>
+                <button class="btn" onclick="fillRoute('Bangalore', 'Chennai')">Search Buses</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Search Suggestions -->
+    <div>
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Quick Search</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 1rem;">
+            <button class="btn btn-secondary" onclick="quickSearch('Delhi')" style="padding: 1rem; text-align: center;">
+                🏛️ Delhi
+            </button>
+            <button class="btn btn-secondary" onclick="quickSearch('Mumbai')" style="padding: 1rem; text-align: center;">
+                🏙️ Mumbai
+            </button>
+            <button class="btn btn-secondary" onclick="quickSearch('Bangalore')" style="padding: 1rem; text-align: center;">
+                🌆 Bangalore
+            </button>
+            <button class="btn btn-secondary" onclick="quickSearch('Chennai')" style="padding: 1rem; text-align: center;">
+                🏖️ Chennai
+            </button>
+            <button class="btn btn-secondary" onclick="quickSearch('Hyderabad')" style="padding: 1rem; text-align: center;">
+                🏰 Hyderabad
+            </button>
+            <button class="btn btn-secondary" onclick="quickSearch('Pune')" style="padding: 1rem; text-align: center;">
+                🎓 Pune
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+<script>
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('travel_date').min = today;
+    
+    // Fill route function for popular routes
+    function fillRoute(source, destination) {
+        document.getElementById('source_city').value = source;
+        document.getElementById('destination_city').value = destination;
+        document.getElementById('searchForm').submit();
+    }
+    
+    // Quick search function
+    function quickSearch(city) {
+        if (document.getElementById('source_city').value === '') {
+            document.getElementById('source_city').value = city;
+        } else {
+            document.getElementById('destination_city').value = city;
+            document.getElementById('searchForm').submit();
+        }
+    }
+</script>
+{% endblock %}

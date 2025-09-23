@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment - {{ booking.route.route_number }} - Nomado{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">Complete Your Payment</h1>
+    <p style="color: #666;">Secure your {{ booking.route.get_transport_type_display }} booking</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 1fr 400px; gap: 2rem;">
+    <!-- Payment Methods -->
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 2rem;">Choose Payment Method</h3>
+        
+        <form method="post" id="paymentForm">
+            {% csrf_token %}
+            
+            <!-- Credit/Debit Card -->
+            <div class="payment-option">
+                <label class="payment-method" for="credit_card">
+                    <input type="radio" name="payment_method" value="credit_card" id="credit_card" required>
+                    <div class="payment-details">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-size: 2rem;">💳</span>
+                            <div>
+                                <strong>Credit/Debit Card</strong>
+                                <div style="color: #666; font-size: 0.9rem;">Visa, Mastercard, Rupay</div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                
+                <div class="card-details" id="card_details" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" placeholder="1234 5678 9012 3456" maxlength="19" class="form-control" id="card_number">
+                        </div>
+                        <div class="form-group">
+                            <label>Expiry</label>
+                            <input type="text" placeholder="MM/YY" maxlength="5" class="form-control" id="expiry">
+                        </div>
+                        <div class="form-group">
+                            <label>CVV</label>
+                            <input type="password" placeholder="123" maxlength="4" class="form-control" id="cvv">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Cardholder Name</label>
+                        <input type="text" placeholder="Name as on card" class="form-control" id="cardholder_name" value="{{ user.get_full_name }}">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- UPI -->
+            <div class="payment-option">
+                <label class="payment-method" for="upi">
+                    <input type="radio" name="payment_method" value="upi" id="upi">
+                    <div class="payment-details">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-size: 2rem;">📱</span>
+                            <div>
+                                <strong>UPI</strong>
+                                <div style="color: #666; font-size: 0.9rem;">Pay using UPI ID or QR code</div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+                
+                <div class="upi-details" id="upi_details" style="display: none; margin-top: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;">
+                    <div class="form-group">
+                        <label>UPI ID</label>
+                        <input type="text" placeholder="yourname@paytm" class="form-control" id="upi_id">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Net Banking -->
+            <div class="payment-option">
+                <label class="payment-method" for="net_banking">
+                    <input type="radio" name="payment_method" value="net_banking" id="net_banking">
+                    <div class="payment-details">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-size: 2rem;">🏦</span>
+                            <div>
+                                <strong>Net Banking</strong>
+                                <div style="color: #666; font-size: 0.9rem;">All major banks supported</div>
+                            </div>
+                        </div>
+                    </div>
+                </label>
+            </div>
+            
+            <!-- Terms and Pay Button -->
+            <div style="margin: 2rem 0;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: #666;">
+                    <input type="checkbox" required> I agree to the Terms & Conditions and cancellation policy
+                </label>
+            </div>
+            
+            <button type="submit" class="btn" style="width: 100%; padding: 15px; font-size: 1.2rem; font-weight: 600;" id="payButton">
+                💳 Pay ₹{{ booking.total_amount|floatformat:0 }}
+            </button>
+        </form>
+    </div>
+    
+    <!-- Booking Summary -->
+    <div>
+        <div class="card">
+            <h3 style="color: #667eea; margin-bottom: 1.5rem;">Booking Summary</h3>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                {% if booking.route.transport_type == 'FLIGHT' %}
+                    <span style="font-size: 3rem;">✈️</span>
+                {% elif booking.route.transport_type == 'TRAIN' %}
+                    <span style="font-size: 3rem;">🚄</span>
+                {% else %}
+                    <span style="font-size: 3rem;">🚌</span>
+                {% endif %}
+                <div style="font-weight: bold; color: #333; margin-top: 0.5rem;">{{ booking.route.get_transport_type_display }}</div>
+                <div style="color: #667eea; font-weight: 600;">{{ booking.route.route_number }}</div>
+                <div style="color: #666;">{{ booking.route.operator_name }}</div>
+            </div>
+            
+            <div style="display: grid; gap: 1rem; margin: 1.5rem 0; padding: 1.5rem; background: #f8f9fa; border-radius: 10px;">
+                <div style="display: flex; align-items: center; gap: 2rem;">
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 1.2rem; font-weight: bold;">{{ booking.route.departure_time|time:"H:i" }}</div>
+                        <div style="color: #666; font-size: 0.9rem;">{{ booking.route.source_city }}</div>
+                    </div>
+                    <div style="text-align: center; color: #667eea;">
+                        <div>{{ booking.route.duration_display }}</div>
+                        <div style="font-size: 0.8rem;">Duration</div>
+                    </div>
+                    <div style="text-align: center; flex: 1;">
+                        <div style="font-size: 1.2rem; font-weight: bold;">{{ booking.route.arrival_time|time:"H:i" }}</div>
+                        <div style="color: #666; font-size: 0.9rem;">{{ booking.route.destination_city }}</div>
+                    </div>
+                </div>
+                
+                <hr style="margin: 1rem 0;">
+                
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Travel Date:</span>
+                    <strong>{{ booking.travel_date|date:"M d, Y" }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Passengers:</span>
+                    <strong>{{ booking.passengers }} passenger{{ booking.passengers|pluralize }}</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Class:</span>
+                    <strong>{{ booking.get_class_type_display }}</strong>
+                </div>
+            </div>
+            
+            <div style="border-top: 1px solid #ddd; padding-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Ticket price ({{ booking.passengers }} passengers)</span>
+                    <span>₹{{ booking.price_per_ticket|floatformat:0 }} × {{ booking.passengers }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span>Convenience fee</span>
+                    <span>₹50</span>
+                </div>
+                <hr>
+                <div style="display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; color: #333;">
+                    <span>Total Amount</span>
+                    <span>₹{{ booking.total_amount|floatformat:0 }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Passenger Info -->
+        <div class="card" style="margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Passenger Details</h4>
+            <div style="font-size: 0.9rem;">
+                {% load jsonify %}
+                {% for name in booking.passenger_names|from_json %}
+                    <div style="padding: 0.5rem 0; border-bottom: 1px solid #eee;">
+                        <strong>{{ name }}</strong>
+                        <span style="color: #666; margin-left: 1rem;">
+                            Age: {{ booking.passenger_ages|from_json|get_item:forloop.counter0 }},
+                            Gender: {{ booking.passenger_genders|from_json|get_item:forloop.counter0 }}
+                        </span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="card" style="margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Information</h4>
+            <div style="font-size: 0.9rem; color: #666;">
+                <div><strong>{{ booking.contact_name }}</strong></div>
+                <div>{{ booking.contact_phone }}</div>
+                <div>{{ booking.contact_email }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.payment-option {
+    margin-bottom: 1rem;
+    border: 2px solid #e1e5e9;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.payment-method {
+    display: block;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.payment-method:hover {
+    background: #f8f9fa;
+}
+
+.payment-option input[type="radio"] {
+    margin-right: 1rem;
+}
+
+.payment-option input[type="radio"]:checked + .payment-details {
+    color: #667eea;
+}
+
+.payment-option:has(input[type="radio"]:checked) {
+    border-color: #667eea;
+    background: #f8f9fa;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const paymentMethods = document.querySelectorAll('input[name="payment_method"]');
+    const payButton = document.getElementById('payButton');
+    
+    paymentMethods.forEach(method => {
+        method.addEventListener('change', function() {
+            // Hide all details
+            document.getElementById('card_details').style.display = 'none';
+            document.getElementById('upi_details').style.display = 'none';
+            
+            // Show selected method details
+            if (this.value === 'credit_card') {
+                document.getElementById('card_details').style.display = 'block';
+                payButton.innerHTML = '💳 Pay with Card - ₹{{ booking.total_amount|floatformat:0 }}';
+            } else if (this.value === 'upi') {
+                document.getElementById('upi_details').style.display = 'block';
+                payButton.innerHTML = '📱 Pay with UPI - ₹{{ booking.total_amount|floatformat:0 }}';
+            } else if (this.value === 'net_banking') {
+                payButton.innerHTML = '🏦 Pay with Net Banking - ₹{{ booking.total_amount|floatformat:0 }}';
+            }
+        });
+    });
+    
+    // Card number formatting
+    document.getElementById('card_number').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+        let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value;
+        e.target.value = formattedValue;
+    });
+    
+    // Expiry formatting
+    document.getElementById('expiry').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2, 4);
+        }
+        e.target.value = value;
+    });
+    
+    // Form submission
+    document.getElementById('paymentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Show loading
+        payButton.innerHTML = '⏳ Processing Payment...';
+        payButton.disabled = true;
+        
+        // Simulate payment processing
+        setTimeout(() => {
+            this.submit();
+        }, 2000);
+    });
+});
+</script>
+{% endblock %}
