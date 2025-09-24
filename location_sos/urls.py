@@ -17,6 +17,7 @@ urlpatterns = [
     path('ajax/share-location/', views.share_location_ajax, name='share_location_ajax'),
     path('ajax/trigger-sos/', views.trigger_sos_ajax, name='trigger_sos_ajax'),
     path('ajax/safety-checkin/', views.safety_checkin_ajax, name='safety_checkin_ajax'),
+    path('ajax/stop-all-shares/', views.stop_all_shares_ajax, name='stop_all_shares_ajax'),
     
     # Public location view
     path('shared/<uuid:share_id>/', views.view_shared_location, name='view_shared_location'),

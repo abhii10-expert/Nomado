@@ -135,6 +135,13 @@ def location_share_view(request):
     """Share current location"""
     emergency_contacts = EmergencyContact.objects.filter(user=request.user, is_active=True)
     
+    # Get active location shares
+    active_shares = LocationShare.objects.filter(
+        user=request.user, 
+        status='ACTIVE',
+        expires_at__gt=timezone.now()
+    )
+    
     if request.method == 'POST':
         form = LocationShareForm(request.POST, user=request.user)
         if form.is_valid():
@@ -142,7 +149,8 @@ def location_share_view(request):
             messages.info(request, 'Please allow location access to share your location.')
             return render(request, 'location_sos/share_location.html', {
                 'form': form,
-                'contacts': emergency_contacts
+                'contacts': emergency_contacts,
+                'active_shares': active_shares
             })
     else:
         form = LocationShareForm(user=request.user)
@@ -150,6 +158,7 @@ def location_share_view(request):
     context = {
         'form': form,
         'contacts': emergency_contacts,
+        'active_shares': active_shares,
     }
     return render(request, 'location_sos/share_location.html', context)
 
@@ -215,6 +224,36 @@ def share_location_ajax(request):
             return JsonResponse({
                 'success': False,
                 'message': f'Error sharing location: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+@csrf_exempt
+@login_required
+def stop_all_shares_ajax(request):
+    """Stop all active location shares for the user"""
+    if request.method == 'POST':
+        try:
+            # Stop all active location shares
+            active_shares = LocationShare.objects.filter(
+                user=request.user,
+                status='ACTIVE',
+                expires_at__gt=timezone.now()
+            )
+            
+            stopped_count = active_shares.count()
+            active_shares.update(status='STOPPED')
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Stopped {stopped_count} active location shares',
+                'stopped_count': stopped_count
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error stopping shares: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request'})

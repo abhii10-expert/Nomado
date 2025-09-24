@@ -72,32 +72,68 @@
     <!-- Emergency Contacts Section -->
     <div class="card" style="margin-bottom: 2rem;">
         <div style="display: flex; justify-content: between; align-items: center; margin-bottom: 1.5rem;">
-            <h3 style="color: #667eea; margin: 0;">Emergency Contacts</h3>
-            <button id="addContactBtn" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
-                Add Contact
-            </button>
+            <h3 style="color: #667eea; margin: 0;">Emergency Contacts ({{ contacts.count }})</h3>
+            <a href="{% url 'emergency_contacts' %}" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
+                Manage Contacts
+            </a>
         </div>
         
         <div id="contactsList">
-            <!-- Contacts will be loaded here -->
-            <div style="text-align: center; color: #666; padding: 2rem;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
-                <p>No emergency contacts added yet</p>
-                <small>Add contacts who should receive your location and emergency alerts</small>
-            </div>
+            {% if contacts %}
+                {% for contact in contacts %}
+                <div class="contact-item">
+                    <div>
+                        <strong>{{ contact.name }}</strong> <span style="color: #666;">({{ contact.get_relationship_display }})</span><br>
+                        <small style="color: #666;">✉️ {{ contact.email }}</small>
+                        {% if contact.is_primary %}
+                            <span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem; margin-left: 10px;">Primary</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="text-align: center; color: #666; padding: 2rem;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
+                    <p>No emergency contacts added yet</p>
+                    <small>Add contacts who should receive your location and emergency alerts</small>
+                    <br><br>
+                    <a href="{% url 'emergency_contacts' %}" class="btn">Add Emergency Contact</a>
+                </div>
+            {% endif %}
         </div>
     </div>
 
-    <!-- Location History -->
+    <!-- Recent Location Shares -->
+    {% if active_shares %}
     <div class="card" style="margin-bottom: 2rem;">
-        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Recent Location Shares</h3>
-        <div id="locationHistory">
-            <div style="text-align: center; color: #666; padding: 2rem;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
-                <p>No location sharing history yet</p>
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Active Location Shares</h3>
+        <div>
+            {% for share in active_shares %}
+            <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1rem; background: #f8f9fa;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Location Share Active</strong><br>
+                        <small style="color: #666;">
+                            Started: {{ share.created_at|date:"M d, Y H:i" }} | 
+                            Expires: {{ share.expires_at|date:"M d, Y H:i" }}
+                        </small>
+                        {% if share.message %}
+                        <br><small style="color: #666;">Message: {{ share.message }}</small>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <a href="{{ share.share_url }}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem;">View Share</a>
+                        <form method="post" action="{% url 'stop_location_share' share.share_id %}" style="display: inline; margin-left: 5px;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn" style="background: #dc3545; padding: 0.5rem 1rem; font-size: 0.9rem;">Stop</button>
+                        </form>
+                    </div>
+                </div>
             </div>
+            {% endfor %}
         </div>
     </div>
+    {% endif %}
 
     <!-- Safety Tips -->
     <div class="card" style="background: #f8f9fa;">
@@ -125,47 +161,12 @@
     </div>
 </div>
 
-<!-- Add Contact Modal -->
-<div id="addContactModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
-    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 500px;">
-        <h4 style="margin-bottom: 1.5rem;">Add Emergency Contact</h4>
-        <form id="addContactForm">
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Contact Name</label>
-                <input type="text" id="contactName" class="form-control" placeholder="Enter full name" required>
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Phone Number</label>
-                <input type="tel" id="contactPhone" class="form-control" placeholder="Enter phone number" required>
-            </div>
-            <div style="margin-bottom: 1rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Email Address</label>
-                <input type="email" id="contactEmail" class="form-control" placeholder="Enter email address" required>
-            </div>
-            <div style="margin-bottom: 1.5rem;">
-                <label style="display: block; margin-bottom: 0.5rem; font-weight: bold;">Relationship</label>
-                <select id="contactRelationship" class="form-control" required>
-                    <option value="">Select relationship</option>
-                    <option value="family">Family Member</option>
-                    <option value="friend">Friend</option>
-                    <option value="colleague">Colleague</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div style="display: flex; gap: 1rem;">
-                <button type="submit" class="btn" style="flex: 1;">Add Contact</button>
-                <button type="button" id="cancelContactBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
-            </div>
-        </form>
-    </div>
-</div>
-
 <!-- SOS Confirmation Modal -->
 <div id="sosModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001;">
     <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; padding: 2rem; border-radius: 10px; width: 90%; max-width: 400px; text-align: center;">
         <div style="font-size: 4rem; color: #dc3545; margin-bottom: 1rem;">🆘</div>
         <h3 style="color: #dc3545; margin-bottom: 1rem;">Send SOS Alert?</h3>
-        <p style="margin-bottom: 2rem;">This will immediately send your current location to all emergency contacts with an SOS message.</p>
+        <p style="margin-bottom: 2rem;">This will immediately send your current location to all {{ contacts.count }} emergency contact{{ contacts.count|pluralize }} with an SOS message.</p>
         <div style="display: flex; gap: 1rem;">
             <button id="confirmSosBtn" class="btn" style="background: #dc3545; border: none; flex: 1;">Send SOS Alert</button>
             <button id="cancelSosBtn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
@@ -177,16 +178,6 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
-}
-
-.pulse-red {
-    animation: pulseRed 2s infinite;
-}
-
-@keyframes pulseRed {
-    0% { background-color: #dc3545; }
-    50% { background-color: #c82333; }
-    100% { background-color: #dc3545; }
 }
 
 .contact-item {
@@ -207,17 +198,14 @@
 <script>
 let watchId = null;
 let isSharing = false;
-let emergencyContacts = JSON.parse(localStorage.getItem('emergencyContacts') || '[]');
-let locationHistory = JSON.parse(localStorage.getItem('locationHistory') || '[]');
+let userLocation = null;
+
+// Emergency contacts count from Django
+const emergencyContactsCount = {{ contacts.count|default:0 }};
 
 document.addEventListener('DOMContentLoaded', function() {
-    loadEmergencyContacts();
-    loadLocationHistory();
-    
-    // Check if already sharing
-    if (localStorage.getItem('isLocationSharing') === 'true') {
-        startLocationSharing();
-    }
+    // Check if already sharing (you can implement this with Django session if needed)
+    // For now, just initialize the interface
 });
 
 // Location Sharing Functions
@@ -248,19 +236,28 @@ function startLocationSharing() {
         maximumAge: 30000
     };
     
-    watchId = navigator.geolocation.watchPosition(
+    navigator.geolocation.getCurrentPosition(
         function(position) {
-            updateLocation(position);
-            if (!isSharing) {
-                isSharing = true;
-                localStorage.setItem('isLocationSharing', 'true');
-                buttonText.textContent = 'Stop Sharing Location';
-                buttonSpinner.style.display = 'none';
-                button.style.background = '#dc3545';
-                document.getElementById('locationStatus').textContent = 'Location Being Shared';
-                document.getElementById('locationStatus').style.background = '#d4edda';
-                document.getElementById('locationStatus').style.color = '#155724';
-            }
+            userLocation = {
+                latitude: position.coords.latitude,
+                longitude: position.coords.longitude,
+                accuracy: position.coords.accuracy
+            };
+            
+            // Send location share request to Django backend
+            shareLocationWithServer();
+            
+            // Update UI
+            isSharing = true;
+            buttonText.textContent = 'Stop Sharing Location';
+            buttonSpinner.style.display = 'none';
+            button.style.background = '#dc3545';
+            document.getElementById('locationStatus').textContent = 'Location Being Shared';
+            document.getElementById('locationStatus').style.background = '#d4edda';
+            document.getElementById('locationStatus').style.color = '#155724';
+            
+            // Update location display
+            updateLocationDisplay(position);
         },
         function(error) {
             handleLocationError(error);
@@ -271,14 +268,65 @@ function startLocationSharing() {
     );
 }
 
+function shareLocationWithServer() {
+    if (!userLocation) return;
+    
+    const duration_hours = 1; // Default to 1 hour
+    const message = "Live location sharing activated";
+    
+    fetch('{% url "share_location_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            latitude: userLocation.latitude,
+            longitude: userLocation.longitude,
+            address: document.getElementById('currentAddress').textContent || '',
+            message: message,
+            duration_hours: duration_hours,
+            selected_contacts: [] // Will use all emergency contacts
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Location sharing started successfully');
+            // Don't reload the page - just show success message
+            alert(`Location sharing started!`);
+        } else {
+            alert('Error starting location sharing: ' + data.message);
+            // Reset button state on error
+            stopLocationSharing();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error starting location sharing');
+        // Reset button state on error
+        stopLocationSharing();
+    });
+}
+
 function stopLocationSharing() {
-    if (watchId !== null) {
-        navigator.geolocation.clearWatch(watchId);
-        watchId = null;
-    }
+    // Stop any active location shares on server
+    fetch('/safety/ajax/stop-all-shares/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Location sharing stopped on server');
+    })
+    .catch(error => {
+        console.error('Error stopping server shares:', error);
+    });
     
     isSharing = false;
-    localStorage.setItem('isLocationSharing', 'false');
     
     const button = document.getElementById('shareLocationBtn');
     const buttonText = document.getElementById('shareButtonText');
@@ -290,7 +338,7 @@ function stopLocationSharing() {
     document.getElementById('locationStatus').style.color = '#6c757d';
 }
 
-function updateLocation(position) {
+function updateLocationDisplay(position) {
     const lat = position.coords.latitude;
     const lng = position.coords.longitude;
     const accuracy = position.coords.accuracy;
@@ -301,40 +349,13 @@ function updateLocation(position) {
     document.getElementById('lastUpdate').textContent = new Date().toLocaleString();
     document.getElementById('locationInfo').style.display = 'block';
     
-    // Get address from coordinates (reverse geocoding)
+    // Get address from coordinates
     getAddressFromCoords(lat, lng);
-    
-    // Save to history
-    const locationData = {
-        lat: lat,
-        lng: lng,
-        timestamp: new Date().toISOString(),
-        accuracy: accuracy
-    };
-    
-    locationHistory.unshift(locationData);
-    if (locationHistory.length > 10) locationHistory.pop(); // Keep only last 10
-    localStorage.setItem('locationHistory', JSON.stringify(locationHistory));
-    loadLocationHistory();
-    
-    // Here you would typically send location to your server
-    sendLocationToServer(locationData);
 }
 
 function getAddressFromCoords(lat, lng) {
-    // Using a simple reverse geocoding service (you can replace with your preferred service)
-    fetch(`https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lng}&key=YOUR_API_KEY`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.results && data.results[0]) {
-                document.getElementById('currentAddress').textContent = data.results[0].formatted;
-            } else {
-                document.getElementById('currentAddress').textContent = 'Address not available';
-            }
-        })
-        .catch(error => {
-            document.getElementById('currentAddress').textContent = 'Address lookup failed';
-        });
+    // Simple fallback - you can implement proper reverse geocoding
+    document.getElementById('currentAddress').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
 }
 
 function handleLocationError(error) {
@@ -358,7 +379,7 @@ function handleLocationError(error) {
 
 // SOS Alert Functions
 document.getElementById('sosAlertBtn').addEventListener('click', function() {
-    if (emergencyContacts.length === 0) {
+    if (emergencyContactsCount === 0) {
         alert('Please add emergency contacts first before sending SOS alerts.');
         return;
     }
@@ -385,146 +406,39 @@ function sendSOSAlert() {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             
-            const sosData = {
-                lat: lat,
-                lng: lng,
-                timestamp: new Date().toISOString(),
-                message: 'EMERGENCY: I need help! This is my current location.',
-                contacts: emergencyContacts
-            };
-            
-            // Here you would send SOS to your server and notification service
-            sendSOSToServer(sosData);
-            
-            alert('SOS Alert sent to all emergency contacts with your location!');
+            // Send SOS alert to Django backend
+            fetch('{% url "trigger_sos_ajax" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({
+                    latitude: lat,
+                    longitude: lng,
+                    address: document.getElementById('currentAddress').textContent || '',
+                    alert_type: 'EMERGENCY',
+                    message: 'Emergency SOS triggered from location sharing page'
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`SOS alert sent successfully! ${data.emails_sent} emergency contacts notified via email.`);
+                } else {
+                    alert('Error sending SOS alert: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error sending SOS alert');
+            });
         },
         function(error) {
             handleLocationError(error);
         },
         { enableHighAccuracy: true, timeout: 10000 }
     );
-}
-
-// Emergency Contacts Functions
-document.getElementById('addContactBtn').addEventListener('click', function() {
-    document.getElementById('addContactModal').style.display = 'block';
-});
-
-document.getElementById('cancelContactBtn').addEventListener('click', function() {
-    document.getElementById('addContactModal').style.display = 'none';
-    document.getElementById('addContactForm').reset();
-});
-
-document.getElementById('addContactForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const contact = {
-        id: Date.now(),
-        name: document.getElementById('contactName').value,
-        phone: document.getElementById('contactPhone').value,
-        email: document.getElementById('contactEmail').value,
-        relationship: document.getElementById('contactRelationship').value
-    };
-    
-    emergencyContacts.push(contact);
-    localStorage.setItem('emergencyContacts', JSON.stringify(emergencyContacts));
-    
-    loadEmergencyContacts();
-    document.getElementById('addContactModal').style.display = 'none';
-    document.getElementById('addContactForm').reset();
-});
-
-function loadEmergencyContacts() {
-    const contactsList = document.getElementById('contactsList');
-    
-    if (emergencyContacts.length === 0) {
-        contactsList.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 2rem;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">👥</div>
-                <p>No emergency contacts added yet</p>
-                <small>Add contacts who should receive your location and emergency alerts</small>
-            </div>
-        `;
-        return;
-    }
-    
-    contactsList.innerHTML = emergencyContacts.map(contact => `
-        <div class="contact-item">
-            <div>
-                <strong>${contact.name}</strong> <span style="color: #666;">(${contact.relationship})</span><br>
-                <small style="color: #666;">📞 ${contact.phone} | ✉️ ${contact.email}</small>
-            </div>
-            <button onclick="removeContact(${contact.id})" class="btn btn-secondary" style="padding: 0.5rem;">
-                Remove
-            </button>
-        </div>
-    `).join('');
-}
-
-function removeContact(contactId) {
-    emergencyContacts = emergencyContacts.filter(contact => contact.id !== contactId);
-    localStorage.setItem('emergencyContacts', JSON.stringify(emergencyContacts));
-    loadEmergencyContacts();
-}
-
-function loadLocationHistory() {
-    const historyDiv = document.getElementById('locationHistory');
-    
-    if (locationHistory.length === 0) {
-        historyDiv.innerHTML = `
-            <div style="text-align: center; color: #666; padding: 2rem;">
-                <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
-                <p>No location sharing history yet</p>
-            </div>
-        `;
-        return;
-    }
-    
-    historyDiv.innerHTML = locationHistory.slice(0, 5).map(location => `
-        <div style="padding: 1rem; border: 1px solid #dee2e6; border-radius: 8px; margin-bottom: 1rem;">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <strong>Location Shared</strong><br>
-                    <small style="color: #666;">
-                        ${new Date(location.timestamp).toLocaleString()} | 
-                        Accuracy: ${location.accuracy.toFixed(0)}m
-                    </small>
-                </div>
-                <a href="https://maps.google.com/?q=${location.lat},${location.lng}" target="_blank" class="btn btn-secondary" style="padding: 0.5rem 1rem;">
-                    View on Map
-                </a>
-            </div>
-        </div>
-    `).join('');
-}
-
-// Server Communication Functions (replace with actual API endpoints)
-function sendLocationToServer(locationData) {
-    // Replace with your actual API endpoint
-    fetch('/api/location/update', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(locationData)
-    }).catch(error => {
-        console.log('Location update failed:', error);
-    });
-}
-
-function sendSOSToServer(sosData) {
-    // Replace with your actual API endpoint
-    fetch('/api/sos/alert', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken')
-        },
-        body: JSON.stringify(sosData)
-    }).catch(error => {
-        console.log('SOS alert failed:', error);
-    });
 }
 
 function getCookie(name) {
@@ -542,15 +456,9 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Close modals when clicking outside
+// Close modal when clicking outside
 window.onclick = function(event) {
-    const addModal = document.getElementById('addContactModal');
     const sosModal = document.getElementById('sosModal');
-    
-    if (event.target === addModal) {
-        addModal.style.display = 'none';
-        document.getElementById('addContactForm').reset();
-    }
     if (event.target === sosModal) {
         sosModal.style.display = 'none';
     }
