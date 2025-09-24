@@ -1,0 +1,30 @@
+EMERGENCY ALERT STATUS UPDATE
+
+Hello {{ contact_name }},
+
+This is an update regarding the emergency alert from {{ user_name }}.
+
+ALERT STATUS: {{ status_display }}
+
+The emergency alert (ID: {{ sos_alert.alert_id }}) has been updated with a new status. 
+
+ORIGINAL ALERT DETAILS:
+- Person: {{ user_name }}
+- Alert Type: {{ sos_alert.get_alert_type_display }}
+- Original Alert Time: {{ sos_alert.created_at|date:"F d, Y - H:i" }}
+- Status Updated: {{ sos_alert.updated_at|date:"F d, Y - H:i" }}
+{% if updated_by %}
+- Updated by: {{ updated_by.get_full_name|default:updated_by.username }}
+{% endif %}
+
+{% if sos_alert.status == 'RESOLVED' %}
+The emergency situation has been resolved. {{ user_name }} is now safe.
+{% elif sos_alert.status == 'FALSE_ALARM' %}
+This was reported as a false alarm. No emergency assistance was needed.
+{% endif %}
+
+Thank you for your quick response and concern for {{ user_name }}'s safety.
+
+Support: {{ support_email }}
+Alert ID: {{ sos_alert.alert_id }}
+Update time: {{ sos_alert.updated_at|date:"F d, Y H:i" }} UTC

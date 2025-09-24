@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Emergency Alert Update - {{ user_name }} - {{ company_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header-resolved {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        .header-false-alarm {
+            background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+        }
+        .header-default {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 30px;
+        }
+        .update-details {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .update-details-resolved {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .update-details-false-alarm {
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+        }
+        .update-details-default {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        .detail-value {
+            color: #34495e;
+            font-weight: 500;
+        }
+        .status-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .status-icon-resolved {
+            color: #27ae60;
+        }
+        .status-icon-false-alarm {
+            color: #6c757d;
+        }
+        .status-icon-default {
+            color: #3498db;
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .contact-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .contact-item {
+            text-align: center;
+            margin: 10px;
+        }
+        .status-box {
+            text-align: center;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .status-box-resolved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status-box-false-alarm {
+            background: #f8f9fa;
+            color: #6c757d;
+        }
+        .status-box-default {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        @media (max-width: 480px) {
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .contact-info {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Header -->
+        <div class="header {% if sos_alert.status == 'RESOLVED' %}header-resolved{% elif sos_alert.status == 'FALSE_ALARM' %}header-false-alarm{% else %}header-default{% endif %}">
+            <div class="status-icon {% if sos_alert.status == 'RESOLVED' %}status-icon-resolved{% elif sos_alert.status == 'FALSE_ALARM' %}status-icon-false-alarm{% else %}status-icon-default{% endif %}">
+                {% if sos_alert.status == 'RESOLVED' %}✅
+                {% elif sos_alert.status == 'FALSE_ALARM' %}ℹ️
+                {% else %}📋{% endif %}
+            </div>
+            <h1>Emergency Alert Update</h1>
+            <p>Status update for emergency alert from {{ user_name }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h2>Hello {{ contact_name }},</h2>
+            
+            <p>This is an update regarding the emergency alert from {{ user_name }}.</p>
+
+            <div class="status-box {% if sos_alert.status == 'RESOLVED' %}status-box-resolved{% elif sos_alert.status == 'FALSE_ALARM' %}status-box-false-alarm{% else %}status-box-default{% endif %}">
+                ALERT STATUS: {{ status_display }}
+            </div>
+
+            <!-- Update Details -->
+            <div class="update-details {% if sos_alert.status == 'RESOLVED' %}update-details-resolved{% elif sos_alert.status == 'FALSE_ALARM' %}update-details-false-alarm{% else %}update-details-default{% endif %}">
+                <h3>📋 Alert Update Information</h3>
+                <div class="detail-row">
+                    <span class="detail-label">Person:</span>
+                    <span class="detail-value">{{ user_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Alert Type:</span>
+                    <span class="detail-value">{{ sos_alert.get_alert_type_display }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Original Alert Time:</span>
+                    <span class="detail-value">{{ sos_alert.created_at|date:"F d, Y - H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status Updated:</span>
+                    <span class="detail-value">{{ sos_alert.resolved_at|default:sos_alert.acknowledged_at|date:"F d, Y - H:i" }}</span>
+                </div>
+                {% if updated_by %}
+                <div class="detail-row">
+                    <span class="detail-label">Updated by:</span>
+                    <span class="detail-value">{{ updated_by.get_full_name|default:updated_by.username }}</span>
+                </div>
+                {% endif %}
+                <div class="detail-row">
+                    <span class="detail-label">Alert ID:</span>
+                    <span class="detail-value">{{ sos_alert.alert_id }}</span>
+                </div>
+            </div>
+
+            <!-- Status-specific message -->
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                {% if sos_alert.status == 'RESOLVED' %}
+                <h3 style="color: #28a745;">✅ Emergency Resolved</h3>
+                <p>The emergency situation has been resolved. {{ user_name }} is now safe and the immediate danger has passed.</p>
+                {% elif sos_alert.status == 'FALSE_ALARM' %}
+                <h3 style="color: #6c757d;">ℹ️ False Alarm</h3>
+                <p>This emergency alert has been marked as a false alarm. No emergency assistance was needed, and {{ user_name }} is safe.</p>
+                {% elif sos_alert.status == 'ACKNOWLEDGED' %}
+                <h3 style="color: #17a2b8;">📋 Alert Acknowledged</h3>
+                <p>This emergency alert has been acknowledged and is being addressed. Emergency contacts have been notified and response is in progress.</p>
+                {% endif %}
+            </div>
+
+            <p>Thank you for your quick response and concern for {{ user_name }}'s safety. Your willingness to help in emergency situations is greatly appreciated.</p>
+
+            {% if sos_alert.status == 'RESOLVED' or sos_alert.status == 'FALSE_ALARM' %}
+            <div style="background: #d4edda; padding: 15px; border-radius: 8px; margin: 20px 0; color: #155724;">
+                <p><strong>No further action is required</strong> regarding this emergency alert. The situation has been resolved.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h4>Support & Contact</h4>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <strong>📧 Email Support</strong><br>
+                    <a href="mailto:{{ support_email }}" style="color: #87ceeb;">{{ support_email }}</a>
+                </div>
+                <div class="contact-item">
+                    <strong>🚨 India Emergency</strong><br>
+                    Police: 100 | Medical: 108 | Fire: 101
+                </div>
+                <div class="contact-item">
+                    <strong>📱 {{ company_name }}</strong><br>
+                    Travel Safety Platform
+                </div>
+            </div>
+            
+            <hr style="border: none; height: 1px; background: #555; margin: 20px 0;">
+            
+            <p style="font-size: 12px; opacity: 0.8;">
+                This status update was sent automatically.<br>
+                Alert ID: {{ sos_alert.alert_id }} | Updated: {{ sos_alert.resolved_at|default:sos_alert.acknowledged_at|date:"F d, Y H:i" }}<br>
+                © 2025 {{ company_name }}. Emergency Alert System.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

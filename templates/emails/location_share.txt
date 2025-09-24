@@ -1,0 +1,39 @@
+# templates/emails/location_share.txt
+LOCATION SHARING NOTIFICATION
+
+Hello {{ contact_name }},
+
+{{ user_name }} has started sharing their live location with you for safety purposes. You can track their whereabouts using the information provided below.
+
+LOCATION SHARE DETAILS:
+- Shared by: {{ user_name }}
+- Started: {{ location_share.created_at|date:"F d, Y - H:i" }}
+- Duration: {{ duration_hours }} hour{{ duration_hours|pluralize }}
+- Expires at: {{ expires_at|date:"F d, Y - H:i" }}
+{% if location_share.address %}
+- Current Address: {{ location_share.address }}
+{% endif %}
+{% if location_share.message %}
+- Message: "{{ location_share.message }}"
+{% endif %}
+
+TRACKING LINKS:
+- Live Location Tracker: {{ share_url }}
+- Google Maps: {{ google_maps_url }}
+
+HOW LOCATION SHARING WORKS:
+- Click the Live Location Tracker link to see {{ user_name }}'s current position
+- The location updates in real-time while active
+- You can view their location on an interactive map
+- The sharing will automatically expire after {{ duration_hours }} hour{{ duration_hours|pluralize }}
+- {{ user_name }} can stop sharing at any time
+
+IMPORTANT: This location share will automatically expire on {{ expires_at|date:"F d, Y at H:i" }}. After this time, you will no longer be able to track {{ user_name }}'s location unless they start a new sharing session.
+
+If you have any concerns about {{ user_name }}'s safety or cannot reach them, please consider contacting local emergency services or other emergency contacts.
+
+Support: {{ support_email }}
+Share ID: {{ location_share.share_id }}
+Created: {{ location_share.created_at|date:"F d, Y H:i" }}
+
+---

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safety Check-in - {{ user_name }} - {{ company_name }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .email-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header-emergency {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+        }
+        .header-concern {
+            background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+        }
+        .header-safe {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.9;
+        }
+        .urgent-notice {
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .urgent-notice-emergency {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        .urgent-notice-concern {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+        .content {
+            padding: 30px;
+        }
+        .checkin-details {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .checkin-details-emergency {
+            background: #f8d7da;
+            border-left: 4px solid #e74c3c;
+        }
+        .checkin-details-concern {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+        }
+        .checkin-details-safe {
+            background: #d4edda;
+            border-left: 4px solid #28a745;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            font-weight: 600;
+        }
+        .detail-label-emergency {
+            color: #721c24;
+        }
+        .detail-label-concern {
+            color: #856404;
+        }
+        .detail-label-safe {
+            color: #155724;
+        }
+        .detail-value {
+            font-weight: 500;
+        }
+        .detail-value-emergency {
+            color: #721c24;
+        }
+        .detail-value-concern {
+            color: #856404;
+        }
+        .detail-value-safe {
+            color: #155724;
+        }
+        .location-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .action-buttons {
+            text-align: center;
+            margin: 30px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 10px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .btn-emergency {
+            background: #dc3545;
+            color: white;
+        }
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        .footer {
+            background: #343a40;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .contact-info {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .contact-item {
+            text-align: center;
+            margin: 10px;
+        }
+        .status-icon {
+            font-size: 48px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        .status-icon-emergency {
+            color: #e74c3c;
+        }
+        .status-icon-concern {
+            color: #f39c12;
+        }
+        .status-icon-safe {
+            color: #27ae60;
+        }
+        .recommendations {
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .recommendations-emergency {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+        }
+        .recommendations-concern {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+        }
+        .recommendations-safe {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+        }
+        @media (max-width: 480px) {
+            .detail-row {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .contact-info {
+                flex-direction: column;
+            }
+            .btn {
+                display: block;
+                margin: 10px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <!-- Urgent Notice for Emergency/Concern -->
+        {% if is_emergency or is_concern %}
+        <div class="urgent-notice {% if is_emergency %}urgent-notice-emergency{% else %}urgent-notice-concern{% endif %}">
+            {% if is_emergency %}
+            🚨 EMERGENCY CHECK-IN - IMMEDIATE ATTENTION REQUIRED 🚨
+            {% else %}
+            ⚠️ SAFETY CONCERN REPORTED - PLEASE CHECK ON {{ user_name }} ⚠️
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Header -->
+        <div class="header {% if is_emergency %}header-emergency{% elif is_concern %}header-concern{% else %}header-safe{% endif %}">
+            <div class="status-icon {% if is_emergency %}status-icon-emergency{% elif is_concern %}status-icon-concern{% else %}status-icon-safe{% endif %}">
+                {% if is_emergency %}🚨
+                {% elif is_concern %}⚠️
+                {% else %}✅{% endif %}
+            </div>
+            <h1>Safety Check-in Update</h1>
+            <p>{{ user_name }} has reported their safety status as: {{ status_display }}</p>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <h2>Hello {{ contact_name }},</h2>
+            
+            {% if is_emergency %}
+            <p><strong style="color: #dc3545;">{{ user_name }} has reported an EMERGENCY situation and may need immediate assistance.</strong></p>
+            {% elif is_concern %}
+            <p><strong style="color: #f39c12;">{{ user_name }} has reported a safety CONCERN and may need support or assistance.</strong></p>
+            {% else %}
+            <p>{{ user_name }} has checked in and reported they are safe.</p>
+            {% endif %}
+
+            <!-- Check-in Details -->
+            <div class="checkin-details {% if is_emergency %}checkin-details-emergency{% elif is_concern %}checkin-details-concern{% else %}checkin-details-safe{% endif %}">
+                <h3>
+                    {% if is_emergency %}🚨 Emergency Check-in Details
+                    {% elif is_concern %}⚠️ Safety Concern Details
+                    {% else %}✅ Safety Check-in Details{% endif %}
+                </h3>
+                <div class="detail-row">
+                    <span class="detail-label {% if is_emergency %}detail-label-emergency{% elif is_concern %}detail-label-concern{% else %}detail-label-safe{% endif %}">Person:</span>
+                    <span class="detail-value {% if is_emergency %}detail-value-emergency{% elif is_concern %}detail-value-concern{% else %}detail-value-safe{% endif %}">{{ user_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label {% if is_emergency %}detail-label-emergency{% elif is_concern %}detail-label-concern{% else %}detail-label-safe{% endif %}">Status:</span>
+                    <span class="detail-value {% if is_emergency %}detail-value-emergency{% elif is_concern %}detail-value-concern{% else %}detail-value-safe{% endif %}">{{ status_display }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label {% if is_emergency %}detail-label-emergency{% elif is_concern %}detail-label-concern{% else %}detail-label-safe{% endif %}">Check-in Time:</span>
+                    <span class="detail-value {% if is_emergency %}detail-value-emergency{% elif is_concern %}detail-value-concern{% else %}detail-value-safe{% endif %}">{{ safety_checkin.created_at|date:"F d, Y - H:i" }}</span>
+                </div>
+                {% if safety_checkin.message %}
+                <div class="detail-row">
+                    <span class="detail-label {% if is_emergency %}detail-label-emergency{% elif is_concern %}detail-label-concern{% else %}detail-label-safe{% endif %}">Message:</span>
+                    <span class="detail-value {% if is_emergency %}detail-value-emergency{% elif is_concern %}detail-value-concern{% else %}detail-value-safe{% endif %}">"{{ safety_checkin.message }}"</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Location Information -->
+            {% if safety_checkin.latitude and safety_checkin.longitude %}
+            <div class="location-info">
+                <h3>📍 Check-in Location</h3>
+                {% if safety_checkin.address %}
+                    <p><strong>Address:</strong> {{ safety_checkin.address }}</p>
+                {% endif %}
+                <p><strong>Coordinates:</strong> {{ safety_checkin.latitude }}, {{ safety_checkin.longitude }}</p>
+                <p><small style="color: #666; font-style: italic;">Location recorded: {{ safety_checkin.created_at|date:"F d, Y at H:i" }}</small></p>
+            </div>
+            {% endif %}
+
+            <!-- Action Buttons -->
+            {% if is_emergency or is_concern %}
+            <div class="action-buttons">
+                {% if is_emergency %}
+                <a href="tel:112" class="btn btn-emergency">📞 Call Emergency Services (112)</a>
+                {% endif %}
+                {% if safety_checkin.latitude and safety_checkin.longitude %}
+                <a href="{{ google_maps_url }}" target="_blank" class="btn btn-info">🗺️ View Location on Map</a>
+                {% endif %}
+                {% if is_concern %}
+                <a href="tel:{{ user.profile.phone_number|default:'+91-XXXXXXXXXX' }}" class="btn btn-warning">📱 Call {{ user_name }}</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Recommendations -->
+            <div class="recommendations {% if is_emergency %}recommendations-emergency{% elif is_concern %}recommendations-concern{% else %}recommendations-safe{% endif %}">
+                {% if is_emergency %}
+                <h3>🚨 Immediate Actions Required</h3>
+                <ul>
+                    <li><strong>Call emergency services immediately</strong> (112 in India)</li>
+                    <li><strong>Try contacting {{ user_name }}</strong> at their registered number</li>
+                    <li><strong>Coordinate with other emergency contacts</strong></li>
+                    <li><strong>If safe, go to their location</strong> to provide assistance</li>
+                    <li><strong>Keep this email</strong> as reference for emergency services</li>
+                </ul>
+                {% elif is_concern %}
+                <h3>⚠️ Recommended Actions</h3>
+                <ul>
+                    <li><strong>Contact {{ user_name }}</strong> to check on their wellbeing</li>
+                    <li><strong>Ask if they need assistance</strong> or support</li>
+                    <li><strong>Consider their location</strong> and any potential risks</li>
+                    <li><strong>Stay in touch</strong> until the concern is resolved</li>
+                    <li><strong>Be prepared to escalate</strong> if the situation worsens</li>
+                </ul>
+                {% else %}
+                <h3>✅ All Good!</h3>
+                <p>{{ user_name }} has reported they are safe. No action is required at this time. This check-in is for your peace of mind and to keep you informed of their wellbeing.</p>
+                {% endif %}
+            </div>
+
+            {% if is_emergency or is_concern %}
+            <div style="background: #fff3cd; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Important:</strong> This check-in was made by {{ user_name }} through their {{ company_name }} safety system. Please take this seriously and respond appropriately based on the reported status.</p>
+            </div>
+            {% endif %}
+
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <h4>Emergency Support</h4>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <strong>📧 Email Support</strong><br>
+                    <a href="mailto:{{ support_email }}" style="color: #87ceeb;">{{ support_email }}</a>
+                </div>
+                <div class="contact-item">
+                    <strong>🚨 India Emergency</strong><br>
+                    Police: 100 | Medical: 108 | Fire: 101
+                </div>
+                <div class="contact-item">
+                    <strong>📱 {{ company_name }}</strong><br>
+                    Travel Safety Platform
+                </div>
+            </div>
+            
+            <hr style="border: none; height: 1px; background: #555; margin: 20px 0;">
+            
+            <p style="font-size: 12px; opacity: 0.8;">
+                This safety check-in notification was sent automatically.<br>
+                Check-in time: {{ safety_checkin.created_at|date:"F d, Y H:i" }} UTC<br>
+                © 2025 {{ company_name }}. Safety Check-in System.
+            </p>
+        </div>
+    </div>
+</body>
+</html>

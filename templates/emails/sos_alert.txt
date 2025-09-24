@@ -1,0 +1,47 @@
+# templates/emails/sos_alert.txt
+EMERGENCY ALERT - IMMEDIATE ACTION REQUIRED
+
+Hello {{ contact_name }},
+
+This is an automated emergency alert from {{ company_name }}.
+
+{{ user_name }} has activated their emergency SOS system and may be in distress or danger. Please take immediate action to check on their wellbeing.
+
+EMERGENCY ALERT DETAILS:
+- Person in Distress: {{ user_name }}
+- Alert Type: {{ alert_type_display }}
+- Alert Time: {{ sos_alert.created_at|date:"F d, Y - H:i" }}
+- Alert ID: {{ sos_alert.alert_id }}
+{% if sos_alert.message %}
+- Message: "{{ sos_alert.message }}"
+{% endif %}
+
+LAST KNOWN LOCATION:
+{% if sos_alert.address %}
+Address: {{ sos_alert.address }}
+{% endif %}
+Coordinates: {{ sos_alert.latitude }}, {{ sos_alert.longitude }}
+Location recorded: {{ sos_alert.created_at|date:"F d, Y at H:i" }}
+
+Google Maps Link: {{ google_maps_url }}
+
+IMMEDIATE ACTIONS RECOMMENDED:
+- Try calling {{ user_name }} immediately
+- If you cannot reach them, contact local emergency services ({{ emergency_number }})
+- Go to their last known location if it's safe and feasible
+- Contact other emergency contacts to coordinate response
+- Keep this email for reference when speaking with authorities
+
+EMERGENCY CONTACTS:
+- India Emergency Services: {{ emergency_number }}
+- Police: 100
+- Medical: 108
+- Fire: 101
+
+This alert was automatically generated when {{ user_name }} activated their emergency SOS feature. Please treat this as a genuine emergency unless confirmed otherwise.
+
+Support: {{ support_email }}
+Alert ID: {{ sos_alert.alert_id }}
+Generated: {{ sos_alert.created_at|date:"F d, Y at H:i" }} UTC
+
+---

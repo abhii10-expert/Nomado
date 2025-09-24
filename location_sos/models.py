@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.core.validators import RegexValidator
 import uuid
 
 User = get_user_model()
@@ -19,9 +18,7 @@ class EmergencyContact(models.Model):
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='emergency_contacts')
     name = models.CharField(max_length=100)
-    phone_regex = RegexValidator(regex=r'^\+?1?\d{9,15}$', message="Phone number must be entered in the format: '+999999999'. Up to 15 digits allowed.")
-    phone_number = models.CharField(validators=[phone_regex], max_length=17)
-    email = models.EmailField(blank=True)
+    email = models.EmailField()  # Made required, removed phone number
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES)
     is_primary = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -57,12 +54,16 @@ class LocationShare(models.Model):
     
     # Sharing details
     shared_with_contacts = models.ManyToManyField(EmergencyContact, blank=True)
-    shared_with_phone = models.CharField(max_length=17, blank=True)  # For sharing with non-contacts
+    shared_with_email = models.EmailField(blank=True)  # Changed from phone to email
     message = models.TextField(blank=True)
     
     # Duration and status
     duration_hours = models.IntegerField(default=1)  # How long to share for
     status = models.CharField(max_length=10, choices=SHARE_STATUS, default='ACTIVE')
+    
+    # Email notification tracking
+    emails_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -110,10 +111,9 @@ class SOSAlert(models.Model):
     acknowledged_at = models.DateTimeField(null=True, blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     
-    # Emergency services notified
-    police_notified = models.BooleanField(default=False)
-    medical_notified = models.BooleanField(default=False)
-    contacts_notified = models.BooleanField(default=False)
+    # Email notification tracking (removed phone fields)
+    emails_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -141,6 +141,10 @@ class SafetyCheckIn(models.Model):
     # Check-in details
     status = models.CharField(max_length=20, choices=CHECK_STATUS, default='SAFE')
     message = models.TextField(blank=True)
+    
+    # Email notification tracking
+    emails_sent = models.BooleanField(default=False)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     
     # Auto check-in settings
     is_scheduled = models.BooleanField(default=False)

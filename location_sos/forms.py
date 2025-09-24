@@ -1,31 +1,35 @@
+# location_sos/forms.py
 from django import forms
 from .models import EmergencyContact, LocationShare, SOSAlert, SafetyCheckIn
 
 class EmergencyContactForm(forms.ModelForm):
     class Meta:
         model = EmergencyContact
-        fields = ['name', 'phone_number', 'email', 'relationship', 'is_primary']
+        fields = ['name', 'email', 'relationship', 'is_primary']
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field in self.fields:
             self.fields[field].widget.attrs.update({'class': 'form-control'})
         
-        self.fields['email'].required = False
+        self.fields['email'].required = True
+        self.fields['email'].widget.attrs.update({
+            'placeholder': 'Enter email address (required for emergency notifications)'
+        })
         self.fields['is_primary'].widget = forms.CheckboxInput(attrs={'class': 'form-check-input'})
 
 class LocationShareForm(forms.ModelForm):
-    shared_with_phone = forms.CharField(
+    shared_with_email = forms.EmailField(
         required=False,
-        widget=forms.TextInput(attrs={
+        widget=forms.EmailInput(attrs={
             'class': 'form-control',
-            'placeholder': 'Optional: Share with phone number'
+            'placeholder': 'Optional: Share with additional email address'
         })
     )
     
     class Meta:
         model = LocationShare
-        fields = ['message', 'duration_hours', 'shared_with_phone']
+        fields = ['message', 'duration_hours', 'shared_with_email']
         
         widgets = {
             'message': forms.Textarea(attrs={
@@ -50,7 +54,7 @@ class LocationShareForm(forms.ModelForm):
                 field_name = f'contact_{contact.id}'
                 self.fields[field_name] = forms.BooleanField(
                     required=False,
-                    label=f'{contact.name} ({contact.relationship})',
+                    label=f'{contact.name} ({contact.get_relationship_display()}) - {contact.email}',
                     widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
                 )
 

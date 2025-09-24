@@ -1,0 +1,58 @@
+SAFETY CHECK-IN UPDATE
+
+Hello {{ contact_name }},
+
+{{ user_name }} has reported their safety status as: {{ status_display }}
+
+{% if is_emergency %}
+{{ user_name }} has reported an EMERGENCY situation and may need immediate assistance.
+{% elif is_concern %}
+{{ user_name }} has reported a safety CONCERN and may need support or assistance.
+{% else %}
+{{ user_name }} has checked in and reported they are safe.
+{% endif %}
+
+CHECK-IN DETAILS:
+- Person: {{ user_name }}
+- Status: {{ status_display }}
+- Check-in Time: {{ safety_checkin.created_at|date:"F d, Y - H:i" }}
+{% if safety_checkin.message %}
+- Message: "{{ safety_checkin.message }}"
+{% endif %}
+
+{% if safety_checkin.latitude and safety_checkin.longitude %}
+CHECK-IN LOCATION:
+{% if safety_checkin.address %}
+Address: {{ safety_checkin.address }}
+{% endif %}
+Coordinates: {{ safety_checkin.latitude }}, {{ safety_checkin.longitude }}
+Google Maps: {{ google_maps_url }}
+Location recorded: {{ safety_checkin.created_at|date:"F d, Y at H:i" }}
+{% endif %}
+
+{% if is_emergency %}
+IMMEDIATE ACTIONS REQUIRED:
+- Call emergency services immediately (112 in India)
+- Try contacting {{ user_name }} at their registered number
+- Coordinate with other emergency contacts
+- If safe, go to their location to provide assistance
+- Keep this email as reference for emergency services
+{% elif is_concern %}
+RECOMMENDED ACTIONS:
+- Contact {{ user_name }} to check on their wellbeing
+- Ask if they need assistance or support
+- Consider their location and any potential risks
+- Stay in touch until the concern is resolved
+- Be prepared to escalate if the situation worsens
+{% else %}
+All good! {{ user_name }} has reported they are safe. No action is required at this time.
+{% endif %}
+
+{% if is_emergency or is_concern %}
+IMPORTANT: This check-in was made by {{ user_name }} through their {{ company_name }} safety system. Please take this seriously and respond appropriately based on the reported status.
+{% endif %}
+
+Support: {{ support_email }}
+Check-in time: {{ safety_checkin.created_at|date:"F d, Y H:i" }} UTC
+
+---

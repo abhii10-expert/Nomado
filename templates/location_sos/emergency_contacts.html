@@ -5,7 +5,7 @@
 {% block content %}
 <div style="margin-bottom: 2rem;">
     <h1 style="color: #667eea;">Emergency Contacts</h1>
-    <p style="color: #666;">Manage your emergency contacts for SOS alerts and location sharing</p>
+    <p style="color: #666;">Manage your emergency contacts for SOS alerts and location sharing. All notifications will be sent via email.</p>
 </div>
 
 <div style="display: grid; grid-template-columns: 1fr 300px; gap: 2rem;">
@@ -18,22 +18,25 @@
                 <div class="card" style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #f8f9fa;">
                     <div>
                         <div style="font-weight: bold; color: #333;">{{ contact.name }}</div>
-                        <div style="color: #666;">{{ contact.phone_number }}</div>
-                        {% if contact.email %}
-                            <div style="color: #666; font-size: 0.9rem;">{{ contact.email }}</div>
-                        {% endif %}
+                        <div style="color: #666; font-size: 0.9rem;">📧 {{ contact.email }}</div>
                         <div style="color: #666; font-size: 0.9rem;">{{ contact.get_relationship_display|default:contact.relationship }}</div>
                         {% if contact.is_primary %}
                             <span style="background: #27ae60; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">Primary</span>
                         {% endif %}
                     </div>
-                    <div style="display: flex; gap: 0.5rem;">
-                        <a href="?edit={{ contact.id }}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
-                        <form method="post" style="display: inline;">
+                    <div style="display: flex; gap: 0.5rem; flex-direction: column;">
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="?edit={{ contact.id }}" class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8rem;">Edit</a>
+                            <form method="post" style="display: inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="delete">
+                                <input type="hidden" name="contact_id" value="{{ contact.id }}">
+                                <button type="submit" class="btn" style="background: #e74c3c; padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Remove this emergency contact?')">Remove</button>
+                            </form>
+                        </div>
+                        <form method="post" action="{% url 'emergency_contact_test' contact.id %}" style="display: inline;">
                             {% csrf_token %}
-                            <input type="hidden" name="action" value="delete">
-                            <input type="hidden" name="contact_id" value="{{ contact.id }}">
-                            <button type="submit" class="btn" style="background: #e74c3c; padding: 5px 10px; font-size: 0.8rem;" onclick="return confirm('Remove this emergency contact?')">Remove</button>
+                            <button type="submit" class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.7rem; width: 100%;">Test Email</button>
                         </form>
                     </div>
                 </div>
@@ -63,18 +66,14 @@
             {% endif %}
             
             <div class="form-group">
-                <label for="name">Name</label>
+                <label for="name">Full Name</label>
                 <input type="text" name="name" id="name" class="form-control" value="{% if editing %}{{ editing.name }}{% endif %}" required>
             </div>
             
             <div class="form-group">
-                <label for="phone_number">Phone Number</label>
-                <input type="text" name="phone_number" id="phone_number" class="form-control" value="{% if editing %}{{ editing.phone_number }}{% endif %}" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email (Optional)</label>
-                <input type="email" name="email" id="email" class="form-control" value="{% if editing %}{{ editing.email }}{% endif %}">
+                <label for="email">Email Address</label>
+                <input type="email" name="email" id="email" class="form-control" value="{% if editing %}{{ editing.email }}{% endif %}" required>
+                <small style="color: #666;">Emergency notifications will be sent to this email</small>
             </div>
             
             <div class="form-group">
@@ -107,6 +106,44 @@
                 <a href="?" class="btn btn-secondary" style="width: 100%; text-align: center; margin-top: 0.5rem;">Cancel</a>
             {% endif %}
         </form>
+    </div>
+</div>
+
+<!-- Information Card -->
+<div class="card" style="margin-top: 2rem; background: #f8f9fa;">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">How Emergency Notifications Work</h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+        <div>
+            <h5 style="color: #e74c3c;">🚨 SOS Alerts</h5>
+            <ul style="color: #666; line-height: 1.6;">
+                <li>Immediate email alerts sent to all emergency contacts</li>
+                <li>Includes your exact location and emergency type</li>
+                <li>Contains direct links to your location on maps</li>
+                <li>Provides emergency contact information</li>
+            </ul>
+        </div>
+        <div>
+            <h5 style="color: #3498db;">📍 Location Sharing</h5>
+            <ul style="color: #666; line-height: 1.6;">
+                <li>Real-time location sharing notifications</li>
+                <li>Secure links to track your location</li>
+                <li>Automatic expiry for privacy</li>
+                <li>Can include personal messages</li>
+            </ul>
+        </div>
+        <div>
+            <h5 style="color: #f39c12;">⚠️ Safety Check-ins</h5>
+            <ul style="color: #666; line-height: 1.6;">
+                <li>Status updates sent to emergency contacts</li>
+                <li>Only CONCERN and EMERGENCY statuses trigger emails</li>
+                <li>Includes location and status details</li>
+                <li>Helps coordinate response efforts</li>
+            </ul>
+        </div>
+    </div>
+    
+    <div style="margin-top: 2rem; padding: 1rem; background: #fff3cd; border-radius: 8px;">
+        <strong>💡 Tip:</strong> Use the "Test Email" button to ensure your emergency contacts receive our notifications properly. This helps verify their email addresses work and that our emails don't go to spam folders.
     </div>
 </div>
 

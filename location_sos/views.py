@@ -1,3 +1,4 @@
+# location_sos/views.py
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,6 +10,7 @@ from datetime import timedelta
 import json
 from .models import EmergencyContact, LocationShare, SOSAlert, SafetyCheckIn
 from .forms import EmergencyContactForm, LocationShareForm, SOSAlertForm, SafetyCheckInForm, QuickSOSForm
+from .email_utils import send_sos_alert_email, send_location_share_email, send_safety_checkin_email, send_alert_status_update_email
 
 @login_required
 def location_dashboard_view(request):
@@ -71,14 +73,13 @@ def emergency_contacts_view(request):
         elif action == 'add':
             # Add new contact
             name = request.POST.get('name', '').strip()
-            phone_number = request.POST.get('phone_number', '').strip()
             email = request.POST.get('email', '').strip()
             relationship = request.POST.get('relationship', '')
             is_primary = request.POST.get('is_primary') == 'on'
             
             # Basic validation
-            if not name or not phone_number or not relationship:
-                messages.error(request, 'Name, phone number, and relationship are required.')
+            if not name or not email or not relationship:
+                messages.error(request, 'Name, email and relationship are required.')
             else:
                 # If setting as primary, remove primary status from other contacts
                 if is_primary:
@@ -88,8 +89,7 @@ def emergency_contacts_view(request):
                 EmergencyContact.objects.create(
                     user=request.user,
                     name=name,
-                    phone_number=phone_number,
-                    email=email if email else None,
+                    email=email,
                     relationship=relationship,
                     is_primary=is_primary
                 )
@@ -103,14 +103,13 @@ def emergency_contacts_view(request):
                 contact = EmergencyContact.objects.get(id=contact_id, user=request.user, is_active=True)
                 
                 contact.name = request.POST.get('name', '').strip()
-                contact.phone_number = request.POST.get('phone_number', '').strip()
-                contact.email = request.POST.get('email', '').strip() or None
+                contact.email = request.POST.get('email', '').strip()
                 contact.relationship = request.POST.get('relationship', '')
                 is_primary = request.POST.get('is_primary') == 'on'
                 
                 # Basic validation
-                if not contact.name or not contact.phone_number or not contact.relationship:
-                    messages.error(request, 'Name, phone number, and relationship are required.')
+                if not contact.name or not contact.email or not contact.relationship:
+                    messages.error(request, 'Name, email and relationship are required.')
                 else:
                     # If setting as primary, remove primary status from other contacts
                     if is_primary and not contact.is_primary:
@@ -130,39 +129,6 @@ def emergency_contacts_view(request):
         'editing': editing,
     }
     return render(request, 'location_sos/emergency_contacts.html', context)
-
-@login_required
-def edit_emergency_contact_view(request, contact_id):
-    """Edit emergency contact"""
-    contact = get_object_or_404(EmergencyContact, id=contact_id, user=request.user)
-    
-    if request.method == 'POST':
-        form = EmergencyContactForm(request.POST, instance=contact)
-        if form.is_valid():
-            form.save()
-            messages.success(request, 'Emergency contact updated successfully!')
-            return redirect('emergency_contacts')
-    else:
-        form = EmergencyContactForm(instance=contact)
-    
-    context = {
-        'form': form,
-        'contact': contact,
-        'editing': True,
-    }
-    return render(request, 'location_sos/emergency_contacts.html', context)
-
-@login_required
-def delete_emergency_contact_view(request, contact_id):
-    """Delete emergency contact"""
-    contact = get_object_or_404(EmergencyContact, id=contact_id, user=request.user)
-    
-    if request.method == 'POST':
-        contact.is_active = False
-        contact.save()
-        messages.success(request, 'Emergency contact removed successfully!')
-    
-    return redirect('emergency_contacts')
 
 @login_required
 def location_share_view(request):
@@ -200,7 +166,7 @@ def share_location_ajax(request):
             message = data.get('message', '')
             duration_hours = int(data.get('duration_hours', 1))
             selected_contacts = data.get('selected_contacts', [])
-            shared_with_phone = data.get('shared_with_phone', '')
+            shared_with_email = data.get('shared_with_email', '')
             
             # Create location share
             expires_at = timezone.now() + timedelta(hours=duration_hours)
@@ -213,27 +179,36 @@ def share_location_ajax(request):
                 message=message,
                 duration_hours=duration_hours,
                 expires_at=expires_at,
-                shared_with_phone=shared_with_phone
+                shared_with_email=shared_with_email
             )
             
-            # Add selected emergency contacts
+            # Get selected emergency contacts
+            emergency_contacts = []
             if selected_contacts:
-                contacts = EmergencyContact.objects.filter(
+                emergency_contacts = EmergencyContact.objects.filter(
                     id__in=selected_contacts, 
                     user=request.user, 
                     is_active=True
                 )
-                location_share.shared_with_contacts.set(contacts)
+                location_share.shared_with_contacts.set(emergency_contacts)
+            
+            # Send email notifications
+            email_count = send_location_share_email(
+                location_share, 
+                emergency_contacts,
+                additional_email=shared_with_email if shared_with_email else None
+            )
             
             # Generate sharing URL
             share_url = request.build_absolute_uri(f'/safety/shared/{location_share.share_id}/')
             
             return JsonResponse({
                 'success': True,
-                'message': 'Location shared successfully!',
+                'message': f'Location shared successfully! {email_count} email notifications sent.',
                 'share_id': str(location_share.share_id),
                 'share_url': share_url,
-                'expires_at': location_share.expires_at.strftime('%Y-%m-%d %H:%M:%S')
+                'expires_at': location_share.expires_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'emails_sent': email_count
             })
             
         except Exception as e:
@@ -267,36 +242,89 @@ def trigger_sos_ajax(request):
                 message=message
             )
             
-            # In a real application, you would send notifications here
-            # For now, we'll just mark as contacts notified
-            sos_alert.contacts_notified = True
-            sos_alert.save()
-            
-            # Get emergency contacts for notification simulation
+            # Get emergency contacts
             emergency_contacts = EmergencyContact.objects.filter(
                 user=request.user, 
                 is_active=True
             )
             
-            # Create notification message
-            notification_message = f"SOS ALERT from {request.user.get_full_name() or request.user.username}"
-            if message:
-                notification_message += f": {message}"
-            notification_message += f"\nLocation: {address or f'{latitude}, {longitude}'}"
-            notification_message += f"\nTime: {sos_alert.created_at.strftime('%Y-%m-%d %H:%M:%S')}"
+            # Send email notifications
+            email_count = send_sos_alert_email(sos_alert, emergency_contacts)
             
             return JsonResponse({
                 'success': True,
-                'message': 'SOS alert sent successfully!',
+                'message': f'SOS alert sent successfully! {email_count} emergency contacts notified via email.',
                 'alert_id': str(sos_alert.alert_id),
                 'contacts_count': emergency_contacts.count(),
-                'notification_message': notification_message
+                'emails_sent': email_count
             })
             
         except Exception as e:
             return JsonResponse({
                 'success': False,
                 'message': f'Error sending SOS alert: {str(e)}'
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+@csrf_exempt
+@login_required
+def safety_checkin_ajax(request):
+    """Handle safety check-in via AJAX"""
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            latitude = float(data.get('latitude'))
+            longitude = float(data.get('longitude'))
+            address = data.get('address', '')
+            status = data.get('status', 'SAFE')
+            message = data.get('message', '')
+            
+            # Create safety check-in
+            checkin = SafetyCheckIn.objects.create(
+                user=request.user,
+                latitude=latitude,
+                longitude=longitude,
+                address=address,
+                status=status,
+                message=message
+            )
+            
+            # If status is EMERGENCY or CONCERN, create SOS alert and send notifications
+            email_count = 0
+            if status in ['EMERGENCY', 'CONCERN']:
+                # Create SOS alert for emergency/concern check-ins
+                if status == 'EMERGENCY':
+                    alert_type = 'EMERGENCY'
+                    SOSAlert.objects.create(
+                        user=request.user,
+                        latitude=latitude,
+                        longitude=longitude,
+                        address=address,
+                        alert_type=alert_type,
+                        message=f"Safety check-in: {status} - {message}",
+                        emails_sent=True  # Will be handled by check-in email
+                    )
+                
+                # Send check-in email notifications
+                emergency_contacts = EmergencyContact.objects.filter(
+                    user=request.user, 
+                    is_active=True
+                )
+                email_count = send_safety_checkin_email(checkin, emergency_contacts)
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Safety check-in recorded successfully! {email_count} notifications sent.' if email_count > 0 else 'Safety check-in recorded successfully!',
+                'status': status,
+                'created_at': checkin.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                'emails_sent': email_count
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f'Error recording check-in: {str(e)}'
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request'})
@@ -325,11 +353,24 @@ def update_sos_status_view(request, alert_id):
     if request.method == 'POST':
         status = request.POST.get('status')
         if status in ['RESOLVED', 'FALSE_ALARM']:
+            old_status = alert.status
             alert.status = status
             if status == 'RESOLVED':
                 alert.resolved_at = timezone.now()
             alert.save()
-            messages.success(request, f'SOS alert marked as {status.lower().replace("_", " ")}.')
+            
+            # Send status update email to emergency contacts
+            emergency_contacts = EmergencyContact.objects.filter(
+                user=request.user, 
+                is_active=True
+            )
+            email_count = send_alert_status_update_email(
+                alert, 
+                emergency_contacts, 
+                updated_by=request.user
+            )
+            
+            messages.success(request, f'SOS alert marked as {status.lower().replace("_", " ")}. {email_count} notifications sent.')
     
     return redirect('sos_alerts')
 
@@ -350,57 +391,6 @@ def safety_checkin_view(request):
         'recent_checkins': recent_checkins,
     }
     return render(request, 'location_sos/safety_checkin.html', context)
-
-@csrf_exempt
-@login_required
-def safety_checkin_ajax(request):
-    """Handle safety check-in via AJAX"""
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            latitude = float(data.get('latitude'))
-            longitude = float(data.get('longitude'))
-            address = data.get('address', '')
-            status = data.get('status', 'SAFE')
-            message = data.get('message', '')
-            
-            # Create safety check-in
-            checkin = SafetyCheckIn.objects.create(
-                user=request.user,
-                latitude=latitude,
-                longitude=longitude,
-                address=address,
-                status=status,
-                message=message
-            )
-            
-            # If status is EMERGENCY or CONCERN, create SOS alert
-            if status in ['EMERGENCY', 'CONCERN']:
-                alert_type = 'EMERGENCY' if status == 'EMERGENCY' else 'OTHER'
-                SOSAlert.objects.create(
-                    user=request.user,
-                    latitude=latitude,
-                    longitude=longitude,
-                    address=address,
-                    alert_type=alert_type,
-                    message=f"Safety check-in: {status} - {message}",
-                    contacts_notified=True
-                )
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Safety check-in recorded successfully!',
-                'status': status,
-                'created_at': checkin.created_at.strftime('%Y-%m-%d %H:%M:%S')
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f'Error recording check-in: {str(e)}'
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 def view_shared_location(request, share_id):
     """Public view for shared location"""
@@ -497,50 +487,42 @@ def safety_checkin_history_view(request):
 
 @login_required
 def emergency_contact_test_view(request, contact_id):
-    """Test emergency contact (send test message)"""
+    """Test emergency contact (send test email)"""
     contact = get_object_or_404(EmergencyContact, id=contact_id, user=request.user, is_active=True)
     
     if request.method == 'POST':
-        # In a real application, you would send an actual SMS/call here
-        # For now, we'll just simulate it
-        test_message = f"This is a test message from Nomado Safety System for {request.user.get_full_name() or request.user.username}. Your contact information is working correctly."
+        from django.core.mail import send_mail
+        from django.conf import settings
         
-        messages.success(request, f'Test message sent to {contact.name} at {contact.phone_number}')
-        
-        # Log the test (you could create a model for this)
+        try:
+            # Send test email
+            subject = f"Test Email from {settings.DEFAULT_FROM_EMAIL.split('<')[0].strip()} Safety System"
+            message = f"""Hello {contact.name},
+
+This is a test email from the Nomado Travel Safety System.
+
+You are registered as an emergency contact for {request.user.get_full_name() or request.user.username}.
+
+If you receive this email, it means our emergency notification system is working correctly and you will receive alerts if {request.user.get_full_name() or request.user.username} triggers an SOS alert, shares their location, or reports a safety concern.
+
+Please save this email address ({settings.EMAIL_HOST_USER}) to ensure our emergency notifications don't go to your spam folder.
+
+Thank you for being a trusted emergency contact.
+
+Best regards,
+Nomado Travel Safety Team"""
+            
+            send_mail(
+                subject=subject,
+                message=message,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[contact.email],
+                fail_silently=False,
+            )
+            
+            messages.success(request, f'Test email sent successfully to {contact.name} at {contact.email}')
+            
+        except Exception as e:
+            messages.error(request, f'Failed to send test email: {str(e)}')
         
     return redirect('emergency_contacts')
-
-# Admin views for managing alerts (if needed)
-@login_required
-def admin_sos_alerts_view(request):
-    """Admin view for all SOS alerts (for staff only)"""
-    if not request.user.is_staff:
-        messages.error(request, 'Access denied.')
-        return redirect('location_dashboard')
-    
-    alerts = SOSAlert.objects.all().select_related('user')
-    
-    # Filter options
-    status_filter = request.GET.get('status')
-    if status_filter:
-        alerts = alerts.filter(status=status_filter)
-    
-    type_filter = request.GET.get('type')
-    if type_filter:
-        alerts = alerts.filter(alert_type=type_filter)
-    
-    # Pagination
-    paginator = Paginator(alerts, 20)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    
-    context = {
-        'alerts': page_obj,
-        'total_alerts': alerts.count(),
-        'status_filter': status_filter,
-        'type_filter': type_filter,
-        'alert_types': SOSAlert.ALERT_TYPE,
-        'alert_statuses': SOSAlert.ALERT_STATUS,
-    }
-    return render(request, 'location_sos/admin_alerts.html', context)
