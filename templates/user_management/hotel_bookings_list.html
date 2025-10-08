@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Bookings - NOMAD Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .navbar a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .page-header {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+        }
+        
+        .page-header .count {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+        
+        .filters {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .filters input, .filters select {
+            padding: 0.75rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            font-size: 1rem;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .filters button {
+            padding: 0.75rem 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .bookings-table {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        th {
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid #ecf0f1;
+            transition: background 0.3s;
+        }
+        
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        td {
+            padding: 1rem;
+            color: #2c3e50;
+        }
+        
+        .booking-id {
+            font-weight: 600;
+            color: #667eea;
+        }
+        
+        .badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .action-btn {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 2rem;
+        }
+        
+        .pagination a, .pagination span {
+            padding: 0.75rem 1rem;
+            background: white;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .pagination .current {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 4rem;
+            color: #7f8c8d;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Hotel Bookings Management</h1>
+        <a href="{% url 'admin_dashboard' %}">Back to Dashboard</a>
+    </nav>
+    
+    <div class="container">
+        <div class="page-header">
+            <h2>All Hotel Bookings</h2>
+            <p class="count">Total: {{ total_count }} bookings</p>
+        </div>
+        
+        <div class="filters">
+            <form method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap; width: 100%;">
+                <input type="text" name="search" placeholder="Search by booking ID, user, or hotel..." value="{{ search }}">
+                <select name="status">
+                    <option value="">All Status</option>
+                    <option value="PENDING" {% if status == 'PENDING' %}selected{% endif %}>Pending</option>
+                    <option value="CONFIRMED" {% if status == 'CONFIRMED' %}selected{% endif %}>Confirmed</option>
+                    <option value="CANCELLED" {% if status == 'CANCELLED' %}selected{% endif %}>Cancelled</option>
+                    <option value="COMPLETED" {% if status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="NO_SHOW" {% if status == 'NO_SHOW' %}selected{% endif %}>No Show</option>
+                </select>
+                <button type="submit">Filter</button>
+            </form>
+        </div>
+        
+        <div class="bookings-table">
+            {% if bookings %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Booking ID</th>
+                        <th>User</th>
+                        <th>Hotel</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Nights</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for booking in bookings %}
+                    <tr>
+                        <td class="booking-id">{{ booking.booking_id }}</td>
+                        <td>
+                            <a href="{% url 'admin_user_detail' booking.user.id %}" style="color: #667eea; text-decoration: none;">
+                                {{ booking.user.username }}
+                            </a>
+                        </td>
+                        <td>{{ booking.hotel.name }}</td>
+                        <td>{{ booking.check_in_date|date:"M d, Y" }}</td>
+                        <td>{{ booking.check_out_date|date:"M d, Y" }}</td>
+                        <td>{{ booking.nights }}</td>
+                        <td>₹{{ booking.total_amount }}</td>
+                        <td>
+                            <span class="badge {{ booking.booking_status|lower }}">
+                                {{ booking.get_booking_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="/admin/hotel_booking/hotelbooking/{{ booking.id }}/change/" class="action-btn">Edit</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            
+            {% if bookings.has_other_pages %}
+            <div class="pagination">
+                {% if bookings.has_previous %}
+                    <a href="?page={{ bookings.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Previous</a>
+                {% endif %}
+                
+                <span class="current">Page {{ bookings.number }} of {{ bookings.paginator.num_pages }}</span>
+                
+                {% if bookings.has_next %}
+                    <a href="?page={{ bookings.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">Next</a>
+                {% endif %}
+            </div>
+            {% endif %}
+            
+            {% else %}
+            <div class="empty-state">
+                <h3>No bookings found</h3>
+                <p>Try adjusting your filters or search query.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

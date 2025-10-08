@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - NOMAD</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+        
+        .navbar .user-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .navbar a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .welcome-banner {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .welcome-banner h2 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+        }
+        
+        .welcome-banner p {
+            color: #7f8c8d;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .stat-card.users::before {
+            background: linear-gradient(90deg, #11998e, #38ef7d);
+        }
+        
+        .stat-card.hotels::before {
+            background: linear-gradient(90deg, #ee0979, #ff6a00);
+        }
+        
+        .stat-card.transport::before {
+            background: linear-gradient(90deg, #f093fb, #f5576c);
+        }
+        
+        .stat-card.revenue::before {
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+        }
+        
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card small {
+            color: #95a5a6;
+            font-size: 0.85rem;
+        }
+        
+        .quick-actions {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .quick-actions h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.5rem;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .action-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.2rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            text-align: center;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(102, 126, 234, 0.4);
+        }
+        
+        .action-btn.add {
+            background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        }
+        
+        .action-btn.view {
+            background: linear-gradient(135deg, #ee0979 0%, #ff6a00 100%);
+        }
+        
+        .action-btn.manage {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .recent-activity {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .activity-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .activity-card h2 {
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            font-size: 1.3rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .booking-item, .user-item {
+            padding: 1rem;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background 0.3s;
+        }
+        
+        .booking-item:hover, .user-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .booking-item:last-child, .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .booking-info, .user-info-detail {
+            flex: 1;
+        }
+        
+        .booking-info strong, .user-info-detail strong {
+            display: block;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+            font-size: 1rem;
+        }
+        
+        .booking-info small, .user-info-detail small {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+        }
+        
+        .status-badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .status-completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+        }
+        
+        .empty-state svg {
+            width: 64px;
+            height: 64px;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        @media (max-width: 768px) {
+            .recent-activity {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>🎯 NOMAD Admin Dashboard</h1>
+        <div class="user-info">
+            <span>Welcome, <strong>{{ request.user.username }}</strong></span>
+            <a href="/admin/">Django Admin</a>
+            <a href="{% url 'logout' %}">Logout</a>
+        </div>
+    </nav>
+    
+    <div class="container">
+        <div class="welcome-banner">
+            <h2>Welcome back, {{ request.user.get_full_name|default:request.user.username }}!</h2>
+            <p>Here's what's happening with your platform today.</p>
+        </div>
+        
+<div class="stats-grid">
+    <a href="{% url 'admin_users_list' %}" class="stat-card users" style="text-decoration: none; color: inherit;">
+        <h3>Total Users</h3>
+        <div class="number">{{ total_users }}</div>
+        <small>{{ active_users }} active | {{ new_users_this_month }} new this month</small>
+    </a>
+    
+    <a href="{% url 'admin_hotels_list' %}" class="stat-card hotels" style="text-decoration: none; color: inherit;">
+        <h3>Hotels</h3>
+        <div class="number">{{ total_hotels }}</div>
+        <small>{{ active_hotels }} active | {{ featured_hotels }} featured</small>
+    </a>
+    
+    <a href="{% url 'admin_routes_list' %}" class="stat-card transport" style="text-decoration: none; color: inherit;">
+        <h3>Transportation Routes</h3>
+        <div class="number">{{ total_routes }}</div>
+        <small>{{ active_routes }} active routes</small>
+    </a>
+    
+    <div class="stat-card revenue">
+        <h3>30-Day Revenue</h3>
+        <div class="number">₹{{ total_revenue|floatformat:0 }}</div>
+        <small>Hotels: ₹{{ hotel_revenue|floatformat:0 }} | Transport: ₹{{ transport_revenue|floatformat:0 }}</small>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <a href="{% url 'admin_hotel_bookings' %}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <h3>Hotel Bookings</h3>
+        <div class="number">{{ total_hotel_bookings }}</div>
+        <small>{{ pending_hotel_bookings }} pending | {{ confirmed_hotel_bookings }} confirmed</small>
+    </a>
+    
+    <a href="{% url 'admin_transport_bookings' %}" class="stat-card" style="text-decoration: none; color: inherit;">
+        <h3>Transport Bookings</h3>
+        <div class="number">{{ total_transport_bookings }}</div>
+        <small>{{ pending_transport_bookings }} pending | {{ confirmed_transport_bookings }} confirmed</small>
+    </a>
+</div>
+        
+<div class="quick-actions">
+    <h2>Quick Actions</h2>
+    <div class="action-buttons">
+        <a href="/admin/hotel_booking/hotel/add/" class="action-btn add">+ Add New Hotel</a>
+        <a href="/admin/transportation/route/add/" class="action-btn add">+ Add New Route</a>
+        <a href="{% url 'admin_hotels_list' %}" class="action-btn">Manage Hotels</a>
+        <a href="{% url 'admin_routes_list' %}" class="action-btn">Manage Routes</a>
+        <a href="{% url 'admin_hotel_bookings' %}" class="action-btn view">View Hotel Bookings</a>
+        <a href="{% url 'admin_transport_bookings' %}" class="action-btn view">View Transport Bookings</a>
+        <a href="{% url 'admin_users_list' %}" class="action-btn manage">Manage Users</a>
+        <a href="{% url 'admin_admins_list' %}" class="action-btn manage">View Admins</a>
+    </div>
+</div>
+        
+        <div class="recent-activity">
+            <div class="activity-card">
+                <h2>Recent Hotel Bookings</h2>
+                {% if recent_hotel_bookings %}
+                    {% for booking in recent_hotel_bookings %}
+                    <div class="booking-item">
+                        <div class="booking-info">
+                            <strong>{{ booking.hotel.name }}</strong>
+                            <small>{{ booking.user.username }} | {{ booking.check_in_date }} - {{ booking.check_out_date }} | ₹{{ booking.total_amount }}</small>
+                        </div>
+                        <span class="status-badge status-{{ booking.booking_status|lower }}">
+                            {{ booking.get_booking_status_display }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No recent hotel bookings</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="activity-card">
+                <h2>Recent Transport Bookings</h2>
+                {% if recent_transport_bookings %}
+                    {% for booking in recent_transport_bookings %}
+                    <div class="booking-item">
+                        <div class="booking-info">
+                            <strong>{{ booking.route.route_number }} - {{ booking.route.source_city }} to {{ booking.route.destination_city }}</strong>
+                            <small>{{ booking.user.username }} | {{ booking.travel_date }} | ₹{{ booking.total_amount }}</small>
+                        </div>
+                        <span class="status-badge status-{{ booking.booking_status|lower }}">
+                            {{ booking.get_booking_status_display }}
+                        </span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-state">
+                        <p>No recent transport bookings</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="activity-card">
+            <h2>Recent User Registrations</h2>
+            {% if recent_users %}
+                {% for user in recent_users %}
+                <div class="user-item">
+                    <div class="user-info-detail">
+                        <strong>{{ user.username }}</strong>
+                        <small>{{ user.email }} | Joined: {{ user.date_joined|date:"M d, Y" }}</small>
+                    </div>
+                    <span class="status-badge {% if user.is_active %}status-confirmed{% else %}status-cancelled{% endif %}">
+                        {% if user.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No recent user registrations</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

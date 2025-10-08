@@ -1,19 +1,54 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}Nomado - Your Travel Companion{% endblock %}
 
 {% block content %}
-<div class="hero-section">
-    <div class="hero-title">Welcome to Nomado</div>
-    <div class="hero-subtitle">Your ultimate travel companion for hotels, transport, and safety</div>
-    <div style="margin-top: 2rem;">
-        {% if user.is_authenticated %}
-            <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="margin: 0 1rem;">My Dashboard</a>
-            <a href="{% url 'hotel_search' %}" class="btn" style="margin: 0 1rem;">Find Hotels</a>
-        {% else %}
-            <a href="{% url 'register' %}" class="btn btn-secondary" style="margin: 0 1rem;">Get Started</a>
-            <a href="{% url 'login' %}" class="btn" style="margin: 0 1rem;">Login</a>
-        {% endif %}
+<!-- Hero Carousel -->
+<div class="hero-carousel">
+    <div class="carousel-slide active">
+        <img src="{% static 'images/hero/hero1.jpg' %}" alt="Travel Destination 1">
+    </div>
+    <div class="carousel-slide">
+        <img src="{% static 'images/hero/hero2.jpg' %}" alt="Travel Destination 2">
+    </div>
+    <div class="carousel-slide">
+        <img src="{% static 'images/hero/hero3.jpg' %}" alt="Travel Destination 3">
+    </div>
+    <div class="carousel-slide">
+        <img src="{% static 'images/hero/hero4.jpg' %}" alt="Travel Destination 4">
+    </div>
+    <div class="carousel-slide">
+        <img src="{% static 'images/hero/hero5.jpg' %}" alt="Travel Destination 5">
+    </div>
+    
+    <div class="carousel-overlay">
+        <div class="hero-title">Welcome to Nomado</div>
+        <div class="hero-subtitle">Your ultimate travel companion for hotels, transport, and safety</div>
+        <div style="margin-top: 2rem;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-secondary" style="margin: 0 1rem;">My Dashboard</a>
+                <a href="{% url 'hotel_search' %}" class="btn" style="margin: 0 1rem;">Find Hotels</a>
+            {% else %}
+                <a href="{% url 'register' %}" class="btn btn-secondary" style="margin: 0 1rem;">Get Started</a>
+                <a href="{% url 'login' %}" class="btn" style="margin: 0 1rem;">Login</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Carousel Arrows -->
+    <div class="carousel-arrows">
+        <button class="carousel-arrow" onclick="changeSlide(-1)">‹</button>
+        <button class="carousel-arrow" onclick="changeSlide(1)">›</button>
+    </div>
+    
+    <!-- Carousel Indicators -->
+    <div class="carousel-indicators">
+        <span class="indicator active" onclick="goToSlide(0)"></span>
+        <span class="indicator" onclick="goToSlide(1)"></span>
+        <span class="indicator" onclick="goToSlide(2)"></span>
+        <span class="indicator" onclick="goToSlide(3)"></span>
+        <span class="indicator" onclick="goToSlide(4)"></span>
     </div>
 </div>
 
@@ -86,4 +121,34 @@
         </div>
     </div>
 </div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const indicators = document.querySelectorAll('.indicator');
+const totalSlides = slides.length;
+
+function showSlide(n) {
+    slides.forEach(slide => slide.classList.remove('active'));
+    indicators.forEach(indicator => indicator.classList.remove('active'));
+    
+    currentSlide = (n + totalSlides) % totalSlides;
+    
+    slides[currentSlide].classList.add('active');
+    indicators[currentSlide].classList.add('active');
+}
+
+function changeSlide(direction) {
+    showSlide(currentSlide + direction);
+}
+
+function goToSlide(n) {
+    showSlide(n);
+}
+
+// Auto-advance carousel every 5 seconds
+setInterval(() => {
+    changeSlide(1);
+}, 5000);
+</script>
 {% endblock %}

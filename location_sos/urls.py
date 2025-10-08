@@ -25,4 +25,6 @@ urlpatterns = [
     # Status updates
     path('sos-alerts/<uuid:alert_id>/update-status/', views.update_sos_status_view, name='update_sos_status'),
     path('location-shares/<uuid:share_id>/stop/', views.stop_location_share_view, name='stop_location_share'),
+
+    path('ajax/get-location/<uuid:share_id>/', views.get_location_update_ajax, name='get_location_update'),
 ]

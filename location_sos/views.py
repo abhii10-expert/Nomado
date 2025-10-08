@@ -191,15 +191,21 @@ def share_location_ajax(request):
                 shared_with_email=shared_with_email
             )
             
-            # Get selected emergency contacts
-            emergency_contacts = []
-            if selected_contacts:
+            # Get ALL emergency contacts if none specifically selected
+            if not selected_contacts:
+                emergency_contacts = EmergencyContact.objects.filter(
+                    user=request.user, 
+                    is_active=True
+                )
+            else:
                 emergency_contacts = EmergencyContact.objects.filter(
                     id__in=selected_contacts, 
                     user=request.user, 
                     is_active=True
                 )
-                location_share.shared_with_contacts.set(emergency_contacts)
+            
+            # Add emergency contacts to the location share
+            location_share.shared_with_contacts.set(emergency_contacts)
             
             # Send email notifications
             email_count = send_location_share_email(
@@ -565,3 +571,24 @@ Nomado Travel Safety Team"""
             messages.error(request, f'Failed to send test email: {str(e)}')
         
     return redirect('emergency_contacts')
+
+@csrf_exempt
+def get_location_update_ajax(request, share_id):
+    """Get updated location for a share"""
+    try:
+        location_share = get_object_or_404(LocationShare, share_id=share_id)
+        
+        # Check if expired
+        if location_share.expires_at < timezone.now():
+            return JsonResponse({'success': False, 'expired': True})
+            
+        return JsonResponse({
+            'success': True,
+            'latitude': float(location_share.latitude),
+            'longitude': float(location_share.longitude),
+            'address': location_share.address,
+            'last_updated': location_share.last_updated.strftime('%H:%M:%S')
+        })
+        
+    except LocationShare.DoesNotExist:
+        return JsonResponse({'success': False, 'not_found': True})

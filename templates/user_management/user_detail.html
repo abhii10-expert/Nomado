@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ profile_user.username }} - User Details</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .navbar h1 {
+            font-size: 1.5rem;
+            color: #2c3e50;
+        }
+        
+        .navbar a {
+            color: #667eea;
+            text-decoration: none;
+            padding: 0.6rem 1.2rem;
+            background: white;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        
+        .navbar a:hover {
+            background: #667eea;
+            color: white;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .user-profile-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 3rem;
+            flex-shrink: 0;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+        
+        .profile-info h2 {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .profile-info .email {
+            color: #7f8c8d;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .info-item {
+            padding: 0.75rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .info-item label {
+            display: block;
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-item span {
+            display: block;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 1rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+        
+        .stat-card h3 {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+        }
+        
+        .stat-card .number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .bookings-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .bookings-section h2 {
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .booking-item {
+            padding: 1.5rem;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .booking-item:hover {
+            border-color: #667eea;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+        }
+        
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+        
+        .booking-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+        
+        .booking-id {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .booking-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .detail-label {
+            color: #7f8c8d;
+            font-size: 0.85rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .detail-value {
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .badge {
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .badge.confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .badge.completed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        .badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .badge.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #7f8c8d;
+        }
+        
+        .admin-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .admin-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .admin-btn.edit {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .admin-btn.edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>User Details: {{ profile_user.username }}</h1>
+        <a href="{% url 'admin_users_list' %}">← Back to Users</a>
+    </nav>
+    
+    <div class="container">
+        <div class="user-profile-card">
+            <div class="profile-avatar">{{ profile_user.username|slice:":1"|upper }}</div>
+            <div class="profile-info">
+                <h2>{{ profile_user.username }}</h2>
+                <p class="email">{{ profile_user.email|default:"No email provided" }}</p>
+                
+                <div class="info-grid">
+                    <div class="info-item">
+                        <label>Full Name</label>
+                        <span>{{ profile_user.get_full_name|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Phone Number</label>
+                        <span>{{ profile_user.phone_number|default:"Not provided" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Account Status</label>
+                        <span class="badge {% if profile_user.is_active %}active{% else %}inactive{% endif %}">
+                            {% if profile_user.is_active %}Active{% else %}Inactive{% endif %}
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <label>Date Joined</label>
+                        <span>{{ profile_user.date_joined|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="info-item">
+                        <label>Last Login</label>
+                        <span>{{ profile_user.last_login|date:"F d, Y H:i"|default:"Never" }}</span>
+                    </div>
+                </div>
+                
+                <div class="admin-actions">
+                    <a href="/admin/user_management/customuser/{{ profile_user.id }}/change/" class="admin-btn edit">Edit User in Django Admin</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Hotel Bookings</h3>
+                <div class="number">{{ total_hotel_bookings }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Transport Bookings</h3>
+                <div class="number">{{ total_transport_bookings }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Hotel Spending</h3>
+                <div class="number">₹{{ total_hotel_spent|floatformat:0 }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Transport Spending</h3>
+                <div class="number">₹{{ total_transport_spent|floatformat:0 }}</div>
+            </div>
+            
+            <div class="stat-card">
+                <h3>Total Spending</h3>
+                <div class="number">₹{{ total_spent|floatformat:0 }}</div>
+            </div>
+        </div>
+        
+        <div class="bookings-section">
+            <h2>Hotel Bookings</h2>
+            {% if hotel_bookings %}
+                {% for booking in hotel_bookings %}
+                <div class="booking-item">
+                    <div class="booking-header">
+                        <div>
+                            <div class="booking-title">{{ booking.hotel.name }}</div>
+                            <div class="booking-id">Booking ID: {{ booking.booking_id }}</div>
+                        </div>
+                        <span class="badge {{ booking.booking_status|lower }}">{{ booking.get_booking_status_display }}</span>
+                    </div>
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Check-in</span>
+                            <span class="detail-value">{{ booking.check_in_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Check-out</span>
+                            <span class="detail-value">{{ booking.check_out_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Nights</span>
+                            <span class="detail-value">{{ booking.nights }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Rooms</span>
+                            <span class="detail-value">{{ booking.rooms }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Guests</span>
+                            <span class="detail-value">{{ booking.guests }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value">₹{{ booking.total_amount }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Booked On</span>
+                            <span class="detail-value">{{ booking.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No hotel bookings found</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="bookings-section">
+            <h2>Transport Bookings</h2>
+            {% if transport_bookings %}
+                {% for booking in transport_bookings %}
+                <div class="booking-item">
+                    <div class="booking-header">
+                        <div>
+                            <div class="booking-title">{{ booking.route.route_number }} - {{ booking.route.source_city }} to {{ booking.route.destination_city }}</div>
+                            <div class="booking-id">Booking ID: {{ booking.booking_id }}</div>
+                        </div>
+                        <span class="badge {{ booking.booking_status|lower }}">{{ booking.get_booking_status_display }}</span>
+                    </div>
+                    <div class="booking-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Travel Date</span>
+                            <span class="detail-value">{{ booking.travel_date|date:"M d, Y" }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Transport Type</span>
+                            <span class="detail-value">{{ booking.route.get_transport_type_display }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Passengers</span>
+                            <span class="detail-value">{{ booking.passengers }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Class</span>
+                            <span class="detail-value">{{ booking.get_class_type_display }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Amount</span>
+                            <span class="detail-value">₹{{ booking.total_amount }}</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Booked On</span>
+                            <span class="detail-value">{{ booking.created_at|date:"M d, Y" }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <p>No transport bookings found</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>
