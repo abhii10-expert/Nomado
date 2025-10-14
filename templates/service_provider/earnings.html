@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Earnings - Nomado{% endblock %}
+
+{% block content %}
+<h1 style="color: #667eea; margin-bottom: 2rem;">My Earnings</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h3 style="margin-bottom: 1rem; opacity: 0.9;">Total Earnings</h3>
+        <div style="font-size: 2.5rem; font-weight: bold;">₹{{ total_earnings|floatformat:0 }}</div>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #2ecc71; margin-bottom: 1rem;">Settled</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #333;">₹{{ settled_earnings|floatformat:0 }}</div>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #f39c12; margin-bottom: 1rem;">Pending</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #333;">₹{{ pending_earnings|floatformat:0 }}</div>
+    </div>
+</div>
+
+{% if earnings %}
+<div class="card">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Earnings History</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th style="padding: 1rem; text-align: left;">Date</th>
+                    <th style="padding: 1rem; text-align: left;">Booking</th>
+                    <th style="padding: 1rem; text-align: left;">Booking Amount</th>
+                    <th style="padding: 1rem; text-align: left;">Commission</th>
+                    <th style="padding: 1rem; text-align: left;">Your Earnings</th>
+                    <th style="padding: 1rem; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for earning in earnings %}
+                <tr style="border-bottom: 1px solid #ecf0f1;">
+                    <td style="padding: 1rem;">{{ earning.created_at|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem;">
+                        {% if earning.hotel_booking %}
+                            Hotel: {{ earning.hotel_booking.booking_id }}
+                        {% elif earning.transport_booking %}
+                            Transport: {{ earning.transport_booking.booking_id }}
+                        {% endif %}
+                    </td>
+                    <td style="padding: 1rem;">₹{{ earning.booking_amount }}</td>
+                    <td style="padding: 1rem;">{{ earning.commission_rate }}% (₹{{ earning.commission_amount }})</td>
+                    <td style="padding: 1rem; font-weight: 600; color: #2ecc71;">₹{{ earning.provider_earnings }}</td>
+                    <td style="padding: 1rem;">
+                        {% if earning.is_settled %}
+                            <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                                Settled
+                            </span>
+                        {% else %}
+                            <span style="background: #fff3cd; color: #856404; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">
+                                Pending
+                            </span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <h3 style="color: #667eea; margin-bottom: 1rem;">No Earnings Yet</h3>
+    <p style="color: #666;">Earnings will appear here once customers complete bookings</p>
+</div>
+{% endif %}
+{% endblock %}

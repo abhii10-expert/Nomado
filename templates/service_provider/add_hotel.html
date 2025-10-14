@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Hotel - Nomado{% endblock %}
+
+{% block content %}
+<h1 style="color: #667eea; margin-bottom: 2rem;">Add New Hotel</h1>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Basic Information</h3>
+        <div class="form-group">
+            <label>Hotel Name</label>
+            {{ form.name }}
+        </div>
+        <div class="form-group">
+            <label>Description</label>
+            {{ form.description }}
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Location</h3>
+        <div class="form-group">
+            <label>Address</label>
+            {{ form.address }}
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>City</label>
+                {{ form.city }}
+            </div>
+            <div class="form-group">
+                <label>State</label>
+                {{ form.state }}
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Country</label>
+                {{ form.country }}
+            </div>
+            <div class="form-group">
+                <label>Pincode</label>
+                {{ form.pincode }}
+            </div>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Contact Details</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Phone</label>
+                {{ form.phone }}
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                {{ form.email }}
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Website (optional)</label>
+            {{ form.website }}
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Pricing</h3>
+        <div class="form-group">
+            <label>Price per Night (₹)</label>
+            {{ form.price_per_night }}
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Amenities</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.wifi }} WiFi
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.parking }} Parking
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.restaurant }} Restaurant
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.pool }} Pool
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.gym }} Gym
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.spa }} Spa
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.room_service }} Room Service
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.air_conditioning }} AC
+            </label>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn">Add Hotel</button>
+            <a href="{% url 'provider_hotels' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

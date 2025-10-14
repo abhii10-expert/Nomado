@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %}Feedback - Nomado{% endblock %}
+
+{% block content %}
+<h1 style="color: #667eea; margin-bottom: 2rem;">Send Us Feedback</h1>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div class="card">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label>Feedback Type</label>
+                {{ form.feedback_type }}
+            </div>
+            
+            <div class="form-group">
+                <label>Subject</label>
+                {{ form.subject }}
+            </div>
+            
+            <div class="form-group">
+                <label>Message</label>
+                {{ form.message }}
+            </div>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Email</label>
+                    {{ form.email }}
+                </div>
+                <div class="form-group">
+                    <label>Phone (optional)</label>
+                    {{ form.phone }}
+                </div>
+            </div>
+            
+            <div style="margin-top: 2rem;">
+                <button type="submit" class="btn">Submit Feedback</button>
+            </div>
+        </form>
+    </div>
+    
+    <div>
+        <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <h3 style="margin-bottom: 1rem;">We Value Your Feedback</h3>
+            <p style="opacity: 0.9;">Your feedback helps us improve our services and provide better travel experiences.</p>
+        </div>
+        
+        <div class="card" style="margin-top: 1rem;">
+            <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Us</h4>
+            <p style="color: #666; line-height: 1.8;">
+                📧 support@nomado.com<br>
+                📞 +91 1234567890<br>
+                🕐 Mon-Sat: 9 AM - 6 PM
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

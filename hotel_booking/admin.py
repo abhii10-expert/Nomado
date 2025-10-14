@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Hotel, HotelImage, HotelBooking
+from .models import Hotel, HotelImage, HotelBooking  # Remove HotelReview
 
 class HotelImageInline(admin.TabularInline):
     model = HotelImage
@@ -100,3 +100,5 @@ class HotelImageAdmin(admin.ModelAdmin):
     list_filter = ['is_primary', 'created_at', 'hotel']
     search_fields = ['hotel__name', 'caption']
     list_editable = ['is_primary']
+
+# HotelReview is in review_feedback app - don't register here

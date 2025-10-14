@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}My Routes - Nomado{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">My Transport Routes</h1>
+    <a href="{% url 'provider_add_route' %}" class="btn">+ Add New Route</a>
+</div>
+
+{% if routes %}
+<div style="display: grid; gap: 1.5rem;">
+    {% for route in routes %}
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+                <h3 style="color: #333; margin-bottom: 0.5rem;">{{ route.route_number }} - {{ route.operator_name }}</h3>
+                <p style="color: #666;">{{ route.get_transport_type_display }}</p>
+            </div>
+            <div>
+                {% if route.is_active %}
+                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">Active</span>
+                {% else %}
+                <span style="background: #fff3cd; color: #856404; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">Pending Approval</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr auto 1fr; gap: 2rem; align-items: center; margin-bottom: 1rem;">
+            <div>
+                <div style="font-weight: 600;">{{ route.source_city }}</div>
+                <small style="color: #666;">{{ route.source_station }}</small>
+                <div style="color: #667eea; font-weight: 500; margin-top: 0.5rem;">{{ route.departure_time|time:"H:i" }}</div>
+            </div>
+            <div style="text-align: center; color: #667eea;">
+                <div>→</div>
+                <small>{{ route.duration_hours }}h {{ route.duration_minutes }}m</small>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-weight: 600;">{{ route.destination_city }}</div>
+                <small style="color: #666;">{{ route.destination_station }}</small>
+                <div style="color: #667eea; font-weight: 500; margin-top: 0.5rem;">{{ route.arrival_time|time:"H:i" }}</div>
+            </div>
+        </div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <span style="font-weight: 600;">₹{{ route.base_price }}</span> | 
+                <span style="color: #666;">{{ route.available_seats }}/{{ route.total_seats }} seats</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <a href="{% url 'provider_edit_route' route.id %}" class="btn">Edit</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <h3 style="color: #667eea; margin-bottom: 1rem;">No Routes Yet</h3>
+    <p style="color: #666; margin-bottom: 2rem;">Start by adding your first transport route</p>
+    <a href="{% url 'provider_add_route' %}" class="btn">Add Your First Route</a>
+</div>
+{% endif %}
+{% endblock %}

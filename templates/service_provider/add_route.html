@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Route - Nomado{% endblock %}
+
+{% block content %}
+<h1 style="color: #667eea; margin-bottom: 2rem;">Add New Route</h1>
+
+<div class="card">
+    <form method="post">
+        {% csrf_token %}
+        
+        <h3 style="color: #667eea; margin-bottom: 1.5rem;">Basic Information</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Transport Type</label>
+                {{ form.transport_type }}
+            </div>
+            <div class="form-group">
+                <label>Operator Name</label>
+                {{ form.operator_name }}
+            </div>
+            <div class="form-group">
+                <label>Route Number</label>
+                {{ form.route_number }}
+            </div>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Route Details</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Source City</label>
+                {{ form.source_city }}
+            </div>
+            <div class="form-group">
+                <label>Source Station</label>
+                {{ form.source_station }}
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Destination City</label>
+                {{ form.destination_city }}
+            </div>
+            <div class="form-group">
+                <label>Destination Station</label>
+                {{ form.destination_station }}
+            </div>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Timing</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Departure Time</label>
+                {{ form.departure_time }}
+            </div>
+            <div class="form-group">
+                <label>Arrival Time</label>
+                {{ form.arrival_time }}
+            </div>
+            <div class="form-group">
+                <label>Duration (Hours)</label>
+                {{ form.duration_hours }}
+            </div>
+            <div class="form-group">
+                <label>Duration (Minutes)</label>
+                {{ form.duration_minutes }}
+            </div>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Days of Operation</h3>
+        <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.monday }} Mon
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.tuesday }} Tue
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.wednesday }} Wed
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.thursday }} Thu
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.friday }} Fri
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.saturday }} Sat
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.sunday }} Sun
+            </label>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Pricing & Seats</h3>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+                <label>Base Price (₹)</label>
+                {{ form.base_price }}
+            </div>
+            <div class="form-group">
+                <label>Total Seats</label>
+                {{ form.total_seats }}
+            </div>
+            <div class="form-group">
+                <label>Available Seats</label>
+                {{ form.available_seats }}
+            </div>
+        </div>
+        
+        <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Features</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.ac_available }} AC Available
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.sleeper_available }} Sleeper
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.wifi_available }} WiFi
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem;">
+                {{ form.food_service }} Food Service
+            </label>
+        </div>
+        
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn">Add Route</button>
+            <a href="{% url 'provider_transport' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

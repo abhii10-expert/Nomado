@@ -1,0 +1,69 @@
+{% extends 'base.html' %}
+
+{% block title %}Service Provider Dashboard - Nomado{% endblock %}
+
+{% block content %}
+<div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem 0; margin-bottom: 2rem; border-radius: 10px;">
+    <h1 style="font-size: 2.5rem; margin-bottom: 0.5rem;">Welcome, {{ provider.business_name }}</h1>
+    <p style="font-size: 1.2rem; opacity: 0.9;">Service Provider Dashboard</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+    <div class="card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <h3 style="margin-bottom: 1rem; opacity: 0.9;">Total Revenue</h3>
+        <div style="font-size: 2.5rem; font-weight: bold;">₹{{ total_revenue|floatformat:0 }}</div>
+    </div>
+    
+    {% if provider.provider_type == 'HOTEL' or provider.provider_type == 'BOTH' %}
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">Hotels</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #333;">{{ hotel_count }}</div>
+        <small style="color: #666;">{{ hotel_bookings_count }} bookings | ₹{{ hotel_revenue|floatformat:0 }}</small>
+    </div>
+    {% endif %}
+    
+    {% if provider.provider_type == 'TRANSPORT' or provider.provider_type == 'BOTH' %}
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">Routes</h3>
+        <div style="font-size: 2rem; font-weight: bold; color: #333;">{{ routes_count }}</div>
+        <small style="color: #666;">{{ transport_bookings_count }} bookings | ₹{{ transport_revenue|floatformat:0 }}</small>
+    </div>
+    {% endif %}
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+    {% if provider.provider_type == 'HOTEL' or provider.provider_type == 'BOTH' %}
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">🏨 Hotel Management</h3>
+        <p style="margin-bottom: 1.5rem; color: #666;">Manage your hotel listings and properties</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{% url 'provider_hotels' %}" class="btn">View Hotels</a>
+            <a href="{% url 'provider_add_hotel' %}" class="btn btn-secondary">Add New Hotel</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% if provider.provider_type == 'TRANSPORT' or provider.provider_type == 'BOTH' %}
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">🚗 Transport Management</h3>
+        <p style="margin-bottom: 1.5rem; color: #666;">Manage your transport routes</p>
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{% url 'provider_transport' %}" class="btn">View Routes</a>
+            <a href="{% url 'provider_add_route' %}" class="btn btn-secondary">Add New Route</a>
+        </div>
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">📊 Bookings</h3>
+        <p style="margin-bottom: 1.5rem; color: #666;">View all customer bookings</p>
+        <a href="{% url 'provider_bookings' %}" class="btn">View Bookings</a>
+    </div>
+    
+    <div class="card">
+        <h3 style="color: #667eea; margin-bottom: 1rem;">💰 Earnings</h3>
+        <p style="margin-bottom: 1.5rem; color: #666;">Track your earnings and payouts</p>
+        <a href="{% url 'provider_earnings' %}" class="btn">View Earnings</a>
+    </div>
+</div>
+{% endblock %}

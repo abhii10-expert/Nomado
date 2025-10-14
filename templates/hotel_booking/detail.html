@@ -203,6 +203,43 @@
                 </button>
             </div>
             
+            <!-- Review Section -->
+{% if user.is_authenticated %}
+    <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee;">
+        <h4 style="color: #667eea; margin-bottom: 1rem;">Write a Review</h4>
+        <a href="{% url 'hotel_review' hotel.id %}" class="btn btn-secondary" style="width: 100%;">
+            Leave a Review
+        </a>
+    </div>
+{% endif %}
+
+<!-- Display Reviews -->
+<div style="margin-top: 3rem;">
+    <h2 style="color: #667eea; margin-bottom: 2rem;">Guest Reviews</h2>
+    {% if hotel.reviews.all %}
+        {% for review in hotel.reviews.all %}
+        <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <strong>{{ review.user.username }}</strong>
+                    {% if review.is_verified %}
+                        <span style="color: #2ecc71; font-size: 0.9rem;">✓ Verified Stay</span>
+                    {% endif %}
+                </div>
+                <div style="color: #ffa500;">
+                    {{ review.overall_rating }}★
+                </div>
+            </div>
+            <h4 style="margin-bottom: 0.5rem;">{{ review.title }}</h4>
+            <p style="color: #666;">{{ review.review_text }}</p>
+            <small style="color: #999;">{{ review.created_at|date:"M d, Y" }}</small>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p style="color: #666;">No reviews yet. Be the first to review!</p>
+    {% endif %}
+</div>
+
             <!-- Contact Information -->
             <div style="margin-top: 2rem; padding-top: 2rem; border-top: 1px solid #eee;">
                 <h4 style="color: #667eea; margin-bottom: 1rem;">Contact Hotel</h4>

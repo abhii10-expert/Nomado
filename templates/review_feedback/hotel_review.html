@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}Review {{ hotel.name }} - Nomado{% endblock %}
+
+{% block content %}
+<h1 style="color: #667eea; margin-bottom: 2rem;">
+    {% if existing_review %}Edit Your Review{% else %}Write a Review{% endif %}
+</h1>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <div class="card">
+        {% if not has_booking %}
+        <div style="background: #fff3cd; padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+            <strong style="color: #856404;">Note:</strong> You can only review hotels where you have completed a stay.
+        </div>
+        {% endif %}
+        
+        <form method="post">
+            {% csrf_token %}
+            
+            <h3 style="color: #667eea; margin-bottom: 1.5rem;">Ratings</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group">
+                    <label>Overall Rating (1-5)</label>
+                    {{ form.overall_rating }}
+                </div>
+                <div class="form-group">
+                    <label>Cleanliness (1-5)</label>
+                    {{ form.cleanliness_rating }}
+                </div>
+                <div class="form-group">
+                    <label>Comfort (1-5)</label>
+                    {{ form.comfort_rating }}
+                </div>
+                <div class="form-group">
+                    <label>Service (1-5)</label>
+                    {{ form.service_rating }}
+                </div>
+                <div class="form-group">
+                    <label>Value for Money (1-5)</label>
+                    {{ form.value_rating }}
+                </div>
+                <div class="form-group">
+                    <label>Location (1-5)</label>
+                    {{ form.location_rating }}
+                </div>
+            </div>
+            
+            <h3 style="color: #667eea; margin: 2rem 0 1.5rem;">Your Review</h3>
+            <div class="form-group">
+                <label>Title</label>
+                {{ form.title }}
+            </div>
+            <div class="form-group">
+                <label>Review</label>
+                {{ form.review_text }}
+            </div>
+            <div class="form-group">
+                <label>Room Type (optional)</label>
+                {{ form.room_type }}
+            </div>
+            
+            <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                <button type="submit" class="btn" {% if not has_booking %}disabled{% endif %}>
+                    {% if existing_review %}Update Review{% else %}Submit Review{% endif %}
+                </button>
+                <a href="{% url 'hotel_detail' hotel.id %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+    
+    <div>
+        <div class="card">
+            <h3 style="color: #667eea; margin-bottom: 1rem;">{{ hotel.name }}</h3>
+            <p style="color: #666; margin-bottom: 1rem;">{{ hotel.city }}, {{ hotel.state }}</p>
+            <div style="font-size: 1.5rem; color: #ffa500; margin-bottom: 1rem;">
+                {{ hotel.overall_rating|floatformat:1 }}★
+            </div>
+        </div>
+        
+        <div class="card" style="margin-top: 1rem; background: #e8f4fd;">
+            <h4 style="color: #1976d2; margin-bottom: 1rem;">Rating Guide</h4>
+            <ul style="color: #1976d2; font-size: 0.9rem; line-height: 1.8;">
+                <li>5★ - Excellent</li>
+                <li>4★ - Very Good</li>
+                <li>3★ - Good</li>
+                <li>2★ - Fair</li>
+                <li>1★ - Poor</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

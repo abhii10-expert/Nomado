@@ -317,23 +317,25 @@
         <div class="nav-container">
             <div class="logo">Nomado</div>
             <ul class="nav-links">
-                <li><a href="{% url 'home' %}">Home</a></li>
-                <li><a href="{% url 'hotel_search' %}">Hotels</a></li>
-                <li><a href="{% url 'transport_search' %}">Transport</a></li>
-                {% if user.is_authenticated %}
-                    {% if user.is_staff or user.is_superuser %}
-                        <li><a href="{% url 'admin_dashboard' %}">Admin</a></li>
-                    {% else %}
-                        <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
-                        <li><a href="{% url 'profile' %}">Profile</a></li>
-                        <li><a href="{% url 'location_share' %}">Safety</a></li>
-                    {% endif %}
-                    <li><a href="{% url 'logout' %}">Logout</a></li>
-                {% else %}
-                    <li><a href="{% url 'login' %}">Login</a></li>
-                    <li><a href="{% url 'register' %}">Register</a></li>
-                {% endif %}
-            </ul>
+    <li><a href="{% url 'home' %}">Home</a></li>
+    <li><a href="{% url 'hotel_search' %}">Hotels</a></li>
+    <li><a href="{% url 'transport_search' %}">Transport</a></li>
+    {% if user.is_authenticated %}
+        {% if user.is_staff or user.is_superuser %}
+            <li><a href="{% url 'admin_dashboard' %}">Admin</a></li>
+        {% elif user.is_service_provider %}
+            <li><a href="{% url 'provider_dashboard' %}">Provider Dashboard</a></li>
+        {% else %}
+            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+            <li><a href="{% url 'profile' %}">Profile</a></li>
+            <li><a href="{% url 'location_share' %}">Safety</a></li>
+        {% endif %}
+        <li><a href="{% url 'logout' %}">Logout</a></li>
+    {% else %}
+        <li><a href="{% url 'login' %}">Login</a></li>
+        <li><a href="{% url 'register' %}">Register</a></li>
+    {% endif %}
+</ul>
         </div>
     </nav>
     

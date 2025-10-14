@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+
+{% block title %}Bookings - Nomado{% endblock %}
+
+{% block content %}
+<style>
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+    .status-confirmed {
+        background: #d4edda;
+        color: #155724;
+    }
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .status-cancelled {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .status-completed {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+    .status-no-show {
+        background: #f8d7da;
+        color: #721c24;
+    }
+</style>
+
+<h1 style="color: #667eea; margin-bottom: 2rem;">My Bookings</h1>
+
+{% if hotel_bookings or transport_bookings %}
+
+<!-- Hotel Bookings -->
+{% if hotel_bookings %}
+<div class="card" style="margin-bottom: 2rem;">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Hotel Bookings</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th style="padding: 1rem; text-align: left;">Booking ID</th>
+                    <th style="padding: 1rem; text-align: left;">Hotel</th>
+                    <th style="padding: 1rem; text-align: left;">Guest</th>
+                    <th style="padding: 1rem; text-align: left;">Check-in</th>
+                    <th style="padding: 1rem; text-align: left;">Check-out</th>
+                    <th style="padding: 1rem; text-align: left;">Amount</th>
+                    <th style="padding: 1rem; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in hotel_bookings %}
+                <tr style="border-bottom: 1px solid #ecf0f1;">
+                    <td style="padding: 1rem;">{{ booking.booking_id }}</td>
+                    <td style="padding: 1rem;">{{ booking.hotel.name }}</td>
+                    <td style="padding: 1rem;">{{ booking.user.username }}</td>
+                    <td style="padding: 1rem;">{{ booking.check_in_date|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem;">{{ booking.check_out_date|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem;">₹{{ booking.total_amount }}</td>
+                    <td style="padding: 1rem;">
+                        <span class="status-badge status-{{ booking.booking_status|lower }}">
+                            {{ booking.get_booking_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- Transport Bookings -->
+{% if transport_bookings %}
+<div class="card">
+    <h3 style="color: #667eea; margin-bottom: 1.5rem;">Transport Bookings</h3>
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa;">
+                <tr>
+                    <th style="padding: 1rem; text-align: left;">Booking ID</th>
+                    <th style="padding: 1rem; text-align: left;">Route</th>
+                    <th style="padding: 1rem; text-align: left;">Passenger</th>
+                    <th style="padding: 1rem; text-align: left;">Travel Date</th>
+                    <th style="padding: 1rem; text-align: left;">Passengers</th>
+                    <th style="padding: 1rem; text-align: left;">Amount</th>
+                    <th style="padding: 1rem; text-align: left;">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for booking in transport_bookings %}
+                <tr style="border-bottom: 1px solid #ecf0f1;">
+                    <td style="padding: 1rem;">{{ booking.booking_id }}</td>
+                    <td style="padding: 1rem;">{{ booking.route.route_number }}</td>
+                    <td style="padding: 1rem;">{{ booking.user.username }}</td>
+                    <td style="padding: 1rem;">{{ booking.travel_date|date:"M d, Y" }}</td>
+                    <td style="padding: 1rem;">{{ booking.passengers }}</td>
+                    <td style="padding: 1rem;">₹{{ booking.total_amount }}</td>
+                    <td style="padding: 1rem;">
+                        <span class="status-badge status-{{ booking.booking_status|lower }}">
+                            {{ booking.get_booking_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <h3 style="color: #667eea; margin-bottom: 1rem;">No Bookings Yet</h3>
+    <p style="color: #666;">Bookings will appear here once customers book your services</p>
+</div>
+{% endif %}
+{% endblock %}

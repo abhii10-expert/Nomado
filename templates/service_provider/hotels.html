@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+
+{% block title %}My Hotels - Nomado{% endblock %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="color: #667eea;">My Hotels</h1>
+    <a href="{% url 'provider_add_hotel' %}" class="btn">+ Add New Hotel</a>
+</div>
+
+{% if hotels %}
+<div style="display: grid; gap: 1.5rem;">
+    {% for hotel in hotels %}
+    <div class="card" style="display: grid; grid-template-columns: 250px 1fr auto; gap: 2rem; align-items: center;">
+        <div>
+            {% if hotel.images.first %}
+            <img src="{{ hotel.images.first.image.url }}" alt="{{ hotel.name }}" style="width: 100%; height: 150px; object-fit: cover; border-radius: 8px;">
+            {% else %}
+            <div style="width: 100%; height: 150px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 2rem;">🏨</div>
+            {% endif %}
+        </div>
+        
+        <div>
+            <h3 style="color: #333; margin-bottom: 0.5rem;">{{ hotel.name }}</h3>
+            <p style="color: #666; margin-bottom: 0.5rem;">📍 {{ hotel.city }}, {{ hotel.state }}</p>
+            <p style="color: #666; margin-bottom: 0.5rem;">₹{{ hotel.price_per_night }}/night</p>
+            <div style="margin-top: 0.5rem;">
+                {% if hotel.is_active %}
+                <span style="background: #d4edda; color: #155724; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">Active</span>
+                {% else %}
+                <span style="background: #fff3cd; color: #856404; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.85rem;">Pending Approval</span>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{% url 'provider_edit_hotel' hotel.id %}" class="btn">Edit</a>
+            <a href="{% url 'hotel_detail' hotel.id %}" class="btn btn-secondary">View</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <h3 style="color: #667eea; margin-bottom: 1rem;">No Hotels Yet</h3>
+    <p style="color: #666; margin-bottom: 2rem;">Start by adding your first hotel property</p>
+    <a href="{% url 'provider_add_hotel' %}" class="btn">Add Your First Hotel</a>
+</div>
+{% endif %}
+{% endblock %}
